@@ -157,6 +157,13 @@ void loop(){
       Serial.print("LOW_CELL_VOLT,");Serial.print(low_cell_volt);Serial.print("\n");
       
     }
+
+    if (canId_BMS == 0x006) {
+      int averageTemp = (buff_BMS[0]);
+
+      Serial.print("AV_TEMP,");Serial.print(averageTemp);Serial.print("\n");
+      
+    }
     ////////////////                     Fin BMS  ///////////////////////////////////////////////////
 
 /*
