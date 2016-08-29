@@ -88,7 +88,7 @@ void loop(){
 
   */
   
-    if( canId_BMS == 0x101){
+    /*if( canId_BMS == 0x101){
       int Voltage_total = (buff_BMS[0]<<8)|buff_BMS[1];
       int Max_Vtg=(buff_BMS[2]<<8)|buff_BMS[3];
       int Min_Vtg=(buff_BMS[4]<<8)|buff_BMS[5];
@@ -163,7 +163,70 @@ void loop(){
 
       Serial.print("AV_TEMP,");Serial.print(averageTemp);Serial.print("\n");
       
+    }*/
+    if (canId_BMS == 0x036) {
+      int cellID = (buff_BMS[0]);
+      int instVolt = (buff_BMS[1]<<8)|buff_BMS[2];
+      int internalResist =  (buff_BMS[3]<<8)|buff_BMS[4];
+      int openVolt =  (buff_BMS[5]<<8)|buff_BMS[6];
+
+      Serial.print("cellID,");Serial.print(cellID);Serial.print("\n");
+      Serial.print("Inst_Volt,");Serial.print(instVolt);Serial.print("\n");
+      Serial.print("Inst_Resist,");Serial.print(internalResist);Serial.print("\n");
+      Serial.print("Open_Volt,");Serial.print(openVolt);Serial.print("\n");
+      
     }
+
+Serial.print("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+Serial.print("\n");
+
+        if (canId_BMS == 0x080) {
+     
+      int ID_80 = (buff_BMS[0]);
+      int TEMP_80 = (buff_BMS[1]);
+      int WHAT_80 = (buff_BMS[3]);
+      
+
+     
+      Serial.print("ID,");Serial.print(ID_80);Serial.print("\n");
+      Serial.print("TEMP,");Serial.print(TEMP_80);Serial.print("\n");
+       Serial.print("WHAT_BYTE_3,");Serial.print(WHAT_80);Serial.print("\n");
+        }
+
+if (canId_BMS == 0x081) {
+     
+      int ID = (buff_BMS[0]);
+      int TEMP = (buff_BMS[1]);
+      int WHAT = (buff_BMS[3]);
+      
+
+     
+      Serial.print("ID,");Serial.print(ID);Serial.print("\n");
+      Serial.print("TEMP,");Serial.print(TEMP);Serial.print("\n");
+       Serial.print("WHAT,");Serial.print(WHAT);Serial.print("\n");
+    
+    }
+
+    
+    
+    if (canId_BMS == 0x082) {
+     
+      int ID_2 = (buff_BMS[1]);
+      int TEMP_2 = (buff_BMS[2]);
+      int WHAT_2 = (buff_BMS[4]);
+      int WHAT_3 = (buff_BMS[5]);
+       int WHAT_4 = (buff_BMS[7]);
+      
+
+     
+      Serial.print("ID_2,");Serial.print(ID_2);Serial.print("\n");
+      Serial.print("TEMP_2,");Serial.print(TEMP_2);Serial.print("\n");
+       Serial.print("BYTE_4,");Serial.print(WHAT_2);Serial.print("\n");
+       Serial.print("BYTE_5,");Serial.print(WHAT_3);Serial.print("\n");
+       Serial.print("BYTE_7,");Serial.print(WHAT_4);Serial.print("\n");
+    
+    }
+    
     ////////////////                     Fin BMS  ///////////////////////////////////////////////////
 
 /*
