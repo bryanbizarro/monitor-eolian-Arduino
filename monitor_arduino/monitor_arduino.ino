@@ -228,90 +228,67 @@ if (canId_BMS == 0x081) {
     }
     
     ////////////////                     Fin BMS  ///////////////////////////////////////////////////
+    
+    ////////////////////////////////////////////// MPPT1 2.0 ////////////////////////////////////////////////////////////
 
-/*
-  
-///////////////////////////// MPPT 1 //////////////////////////////////////////////////////////////////////
     // send data:  id = 0x00, standrad frame, data len = 8, stmp: data buf
-  //CAN.sendMsgBuf(0x711, 0, 0, 0);
-  ///delay(del);
-  unsigned long canId1 = CAN.getCanId();                      // send data per 100ms
-  if (canId1 == 0x771) 
-  {
-  //  flagRecv = 0; //borrar flag
+    CAN.sendMsgBuf(0x711, 0, 0, 0);
+    unsigned long canId1 = CAN.getCanId();
+    if (canId1 == 0x771){
+      
+    flagRecv = 0; //borrar flag
     CAN.readMsgBuf(&len, buff);
-        
-    int  Uin = ((bitRead(buff[0],1)<<1|bitRead(buff[0],1))<<8)|buff[1];
-    int  Iin = ((bitRead(buff[2],1)<<1|bitRead(buff[2],1))<<8)|buff[3];
-    int Uout = ((bitRead(buff[4],1)<<1|bitRead(buff[4],1))<<8)|buff[5];
+
+    int MPPT_TEMP  = buff[6]
+    int  Uin  = ((bitRead(buff[0],1)<<1|bitRead(buff[0],1))<<8)|buff[1];
+    int  Iin  = ((bitRead(buff[2],1)<<1|bitRead(buff[2],1))<<8)|buff[3];
+    int Uout  = ((bitRead(buff[4],1)<<1|bitRead(buff[4],1))<<8)|buff[5];
+    bool BVLR = (bitRead(buff[0],7));
+    bool OVT  = (bitRead(buff[0],6));
+    bool NOC  = (bitRead(buff[0],5));
+    bool UNDV = (bitRead(buff[0],4));
     
-    Serial.print("XLS,write,DatosMB,C4,");Serial.print(bitRead(buff[0],7));Serial.print("\n");
-    Serial.print("XLS,write,DatosMB,C5,");Serial.print(bitRead(buff[0],6));Serial.print("\n");
-    Serial.print("XLS,write,DatosMB,C6,");Serial.print(bitRead(buff[0],5));Serial.print("\n");
-    Serial.print("XLS,write,DatosMB,C7,");Serial.print(bitRead(buff[0],4));Serial.print("\n");
-    Serial.print("XLS,write,DatosMB,C8,");Serial.print(buff[6]);Serial.print("\n");
-    Serial.print("XLS,write,DatosMB,C10,");Serial.print(Uin);Serial.print("\n");
-    Serial.print("XLS,write,DatosMB,C11,");Serial.print(Iin);Serial.print("\n");
-    Serial.print("XLS,write,DatosMB,C12,");Serial.print(Uout);Serial.print("\n");
+    
+    Serial.print("MPPT1_BVLR,");Serial.print(BVLR);Serial.print("\n");
+    Serial.print("MPPT1_OVT,");Serial.print(OVT);Serial.print("\n");
+    Serial.print("MPPT1_NOC,");Serial.print(NOC);Serial.print("\n");
+    Serial.print("MPPT1_UNDV,");Serial.print(UNDV);Serial.print("\n");
+    Serial.print("MPPT1_TEMP,");Serial.print(MPPT_TEMP);Serial.print("\n");
+    Serial.print("MPPT1_UIN,");Serial.print(Uin);Serial.print("\n");
+    Serial.print("MPPT1_IIN,");Serial.print(Iin);Serial.print("\n");
+    Serial.print("MPPT1_UOUT");Serial.print(Uout);Serial.print("\n");
+    }
 
-    Serial.print("XLS,write,Ms,A");Serial.print(idxM1 + 3);Serial.print(",");Serial.print("%date%");Serial.print("\n");
-    Serial.print("XLS,write,Ms,B");Serial.print(idxM1 + 3);Serial.print(",");Serial.print("%time%");Serial.print("\n");
-    Serial.print("XLS,write,Ms,C");Serial.print(idxM1 + 3);Serial.print(",");Serial.print(idxM1);Serial.print("\n");
+    ////////////////////////////////////////////// MPPT2 2.0 ////////////////////////////////////////////////////////////
 
-    Serial.print("XLS,write,Ms,D");Serial.print(idxM1 + 3);Serial.print(",");Serial.print(bitRead(buff[0],7));Serial.print("\n");
-    Serial.print("XLS,write,Ms,E");Serial.print(idxM1 + 3);Serial.print(",");Serial.print(bitRead(buff[0],6));Serial.print("\n");
-    Serial.print("XLS,write,Ms,F");Serial.print(idxM1 + 3);Serial.print(",");Serial.print(bitRead(buff[0],5));Serial.print("\n");
-    Serial.print("XLS,write,Ms,G");Serial.print(idxM1 + 3);Serial.print(",");Serial.print(bitRead(buff[0],4));Serial.print("\n");
-    Serial.print("XLS,write,Ms,H");Serial.print(idxM1 + 3);Serial.print(",");Serial.print(buff[6]);Serial.print("\n");
-    Serial.print("XLS,write,Ms,I");Serial.print(idxM1 + 3);Serial.print(",");Serial.print(Uin);Serial.print("\n");
-    Serial.print("XLS,write,Ms,J");Serial.print(idxM1 + 3);Serial.print(",");Serial.print(Iin);Serial.print("\n");
-    Serial.print("XLS,write,Ms,K");Serial.print(idxM1 + 3);Serial.print(",");Serial.print(Uout);Serial.print("\n");
-
-    idxM1++;
-    delay(del);   
-  } ////  Fin MPPT_1   /////////////////////////////////////////////////////////////////////////////////////////
-
-
-CAN.sendMsgBuf(0x712, 0, 0, 0);
-///delay(del);
-  unsigned long canId2 = CAN.getCanId();                       // send data per 100ms
-  if (canId2 == 0x772);
-  { //cheque si recibe datos
-  //  flagRecv = 0; //borrar flag
+    // send data:  id = 0x00, standrad frame, data len = 8, stmp: data buf
+    CAN.sendMsgBuf(0x712, 0, 0, 0);
+    unsigned long canId1 = CAN.getCanId();
+    if (canId1 == 0x772){
+      
+    flagRecv = 0; //borrar flag
     CAN.readMsgBuf(&len, buff);
-    int  Uin = ((bitRead(buff[0],1)<<1|bitRead(buff[0],1))<<8)|buff[1];
-    int  Iin = ((bitRead(buff[2],1)<<1|bitRead(buff[2],1))<<8)|buff[3];
-    int Uout = ((bitRead(buff[4],1)<<1|bitRead(buff[4],1))<<8)|buff[5];
+
+    int MPPT_TEMP  = buff[6]
+    int  Uin  = ((bitRead(buff[0],1)<<1|bitRead(buff[0],1))<<8)|buff[1];
+    int  Iin  = ((bitRead(buff[2],1)<<1|bitRead(buff[2],1))<<8)|buff[3];
+    int Uout  = ((bitRead(buff[4],1)<<1|bitRead(buff[4],1))<<8)|buff[5];
+    bool BVLR = (bitRead(buff[0],7));
+    bool OVT  = (bitRead(buff[0],6));
+    bool NOC  = (bitRead(buff[0],5));
+    bool UNDV = (bitRead(buff[0],4));
     
-    Serial.print("XLS,write,DatosMB,D4,");Serial.print(bitRead(buff[0],7));Serial.print("\n");
-    Serial.print("XLS,write,DatosMB,D5,");Serial.print(bitRead(buff[0],6));Serial.print("\n");
-    Serial.print("XLS,write,DatosMB,D6,");Serial.print(bitRead(buff[0],5));Serial.print("\n");
-    Serial.print("XLS,write,DatosMB,D7,");Serial.print(bitRead(buff[0],4));Serial.print("\n");
-    Serial.print("XLS,write,DatosMB,D8,");Serial.print(buff[6]);Serial.print("\n");
-    Serial.print("XLS,write,DatosMB,D10,");Serial.print(Uin);Serial.print("\n");
-    Serial.print("XLS,write,DatosMB,D11,");Serial.print(Iin);Serial.print("\n");
-    Serial.print("XLS,write,DatosMB,D12,");Serial.print(Uout);Serial.print("\n");
+    
+    Serial.print("MPPT2_BVLR,");Serial.print(BVLR);Serial.print("\n");
+    Serial.print("MPPT2_OVT,");Serial.print(OVT);Serial.print("\n");
+    Serial.print("MPPT2_NOC,");Serial.print(NOC);Serial.print("\n");
+    Serial.print("MPPT2_UNDV,");Serial.print(UNDV);Serial.print("\n");
+    Serial.print("MPPT2_TEMP,");Serial.print(MPPT_TEMP);Serial.print("\n");
+    Serial.print("MPPT2_UIN,");Serial.print(Uin);Serial.print("\n");
+    Serial.print("MPPT2_IIN,");Serial.print(Iin);Serial.print("\n");
+    Serial.print("MPPT2_UOUT");Serial.print(Uout);Serial.print("\n");
+    }
 
-    Serial.print("XLS,write,Ms,M");Serial.print(idxM2 + 3);Serial.print(",");Serial.print("%date%");Serial.print("\n");
-    Serial.print("XLS,write,Ms,N");Serial.print(idxM2 + 3);Serial.print(",");Serial.print("%time%");Serial.print("\n");
-    Serial.print("XLS,write,Ms,O");Serial.print(idxM2 + 3);Serial.print(",");Serial.print(idxM1);Serial.print("\n");
-
-    Serial.print("XLS,write,Ms,P");Serial.print(idxM2 + 3);Serial.print(",");Serial.print(bitRead(buff[0],7));Serial.print("\n");
-    Serial.print("XLS,write,Ms,Q");Serial.print(idxM2 + 3);Serial.print(",");Serial.print(bitRead(buff[0],6));Serial.print("\n");
-    Serial.print("XLS,write,Ms,R");Serial.print(idxM2 + 3);Serial.print(",");Serial.print(bitRead(buff[0],5));Serial.print("\n");
-    Serial.print("XLS,write,Ms,S");Serial.print(idxM2 + 3);Serial.print(",");Serial.print(bitRead(buff[0],4));Serial.print("\n");
-    Serial.print("XLS,write,Ms,T");Serial.print(idxM2 + 3);Serial.print(",");Serial.print(buff[6]);Serial.print("\n");
-    Serial.print("XLS,write,Ms,U");Serial.print(idxM2 + 3);Serial.print(",");Serial.print(Uin);Serial.print("\n");
-    Serial.print("XLS,write,Ms,V");Serial.print(idxM2 + 3);Serial.print(",");Serial.print(Iin);Serial.print("\n");
-    Serial.print("XLS,write,Ms,W");Serial.print(idxM2 + 3);Serial.print(",");Serial.print(Uout);Serial.print("\n");
-
-    idxM2++;
-    delay(del);
-  } //// Fin MPPT_2  ///////////////////////////////////////////////////////////////////////////////////////////////////
-
-*/
-
-
-  
-} ///////   Fin  Loop //////
+    /////// Fin Loop ///////
+    } 
 
