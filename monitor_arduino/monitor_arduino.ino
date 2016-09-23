@@ -1,6 +1,18 @@
 // demo: CAN-BUS Shield, send data
 #include <mcp_can.h>
 #include <SPI.h>
+#include <SoftwareSerial.h>
+
+
+//  SOFTWARE SERIAL ALLOWS TO READ A SECOND BUFFER SERIAL IN tx & rx PINS
+
+int rx = 10;
+int tx = 11;
+
+SoftwareSerial mySerial(rx, tx); 
+
+//  END SOFTWARE SERIAL
+
 
 // the cs pin of the version after v1.1 is default to D9
 // v0.9b and v1.0 is default D10
@@ -33,6 +45,10 @@ int   outputTiming = 1000;            // packet sending timing in ms      import
 float input1;                         // received value
 //float inputArray[6];                  // received values
 
+// Read2Serial vars
+int MPPTId;
+char c;
+
 
 
 ///////////////////////////////////////////////////////////////////
@@ -41,6 +57,7 @@ MCP_CAN CAN(SPI_CS_PIN);                                    // Set CS pin
 
 void setup()
 {
+  mySerial.begin(9600);
   Serial.begin(9600);
 
 START_INIT:
@@ -68,6 +85,52 @@ void MCP2515_ISR()
 {
   flagRecv = 1;
 }
+
+
+bool read2Serial(){
+  if(mySerial.available()){
+      mySerial.readBytes(buff,2);
+      if((buff[0] == 0) && (buff[1] == 0)){
+          MPPTId = mySerial.read()-48;
+          c = mySerial.read();
+          if(c == 0){
+            mySerial.readBytes(buff,7);
+            c = mySerial.read();
+            if(c == 1){
+              
+              int MPPT_TEMP  = buff[6];
+              int  Uin  = ((bitRead(buff[0],1)<<1|bitRead(buff[0],0))<<8)|buff[1];
+              int  Iin  = ((bitRead(buff[2],1)<<1|bitRead(buff[2],0))<<8)|buff[3];
+              int Uout  = ((bitRead(buff[4],1)<<1|bitRead(buff[4],0))<<8)|buff[5];
+              int BVLR = (bitRead(buff[0],7));
+              int OVT  = (bitRead(buff[0],6));
+              int NOC  = (bitRead(buff[0],5));
+              int UNDV = (bitRead(buff[0],4));
+
+              Serial.print("MPPT");Serial.print(MPPTId);Serial.print("_BVLR,");Serial.print(BVLR);Serial.print("\n");
+              Serial.print("MPPT");Serial.print(MPPTId);Serial.print("_OVT,");Serial.print(OVT);Serial.print("\n");
+              Serial.print("MPPT");Serial.print(MPPTId);Serial.print("_NOC,");Serial.print(NOC);Serial.print("\n");
+              Serial.print("MPPT");Serial.print(MPPTId);Serial.print("_UNDV,");Serial.print(UNDV);Serial.print("\n");
+              Serial.print("MPPT");Serial.print(MPPTId);Serial.print("_TEMP,");Serial.print(MPPT_TEMP);Serial.print("\n");
+              Serial.print("MPPT");Serial.print(MPPTId);Serial.print("_UIN,");Serial.print(Uin);Serial.print("\n");
+              Serial.print("MPPT");Serial.print(MPPTId);Serial.print("_IIN,");Serial.print(Iin);Serial.print("\n");
+              Serial.print("MPPT");Serial.print(MPPTId);Serial.print("_UOUT");Serial.print(Uout);Serial.print("\n");
+
+              
+              return true;
+            }
+          }
+      } else if((buff[0] == 255) && (buff[1] == 255)){
+        Serial.print("ARDUINO2_ERR");
+        return true;
+      } else if((buff[0] == 255) && (buff[1] == 255)){
+        Serial.print("ARDUINO2_READY4YOU");
+        return true;
+      }
+    }
+    return false;
+}
+
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 void loop(){
@@ -177,9 +240,6 @@ void loop(){
       
     }
 
-Serial.print("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
-Serial.print("\n");
-
         if (canId_BMS == 0x080) {
      
       int ID_80 = (buff_BMS[0]);
@@ -228,66 +288,14 @@ if (canId_BMS == 0x081) {
     }
     
     ////////////////                     Fin BMS  ///////////////////////////////////////////////////
-    
-    ////////////////////////////////////////////// MPPT1 2.0 ////////////////////////////////////////////////////////////
 
-    // send data:  id = 0x00, standrad frame, data len = 8, stmp: data buf
-    CAN.sendMsgBuf(0x711, 0, 0, 0);
-    unsigned long canId1 = CAN.getCanId();
-    if (canId1 == 0x771){
-      
-    flagRecv = 0; //borrar flag
-    CAN.readMsgBuf(&len, buff);
-
-    int MPPT_TEMP  = buff[6]
-    int  Uin  = ((bitRead(buff[0],1)<<1|bitRead(buff[0],1))<<8)|buff[1];
-    int  Iin  = ((bitRead(buff[2],1)<<1|bitRead(buff[2],1))<<8)|buff[3];
-    int Uout  = ((bitRead(buff[4],1)<<1|bitRead(buff[4],1))<<8)|buff[5];
-    bool BVLR = (bitRead(buff[0],7));
-    bool OVT  = (bitRead(buff[0],6));
-    bool NOC  = (bitRead(buff[0],5));
-    bool UNDV = (bitRead(buff[0],4));
+    Serial.flush();
     
-    
-    Serial.print("MPPT1_BVLR,");Serial.print(BVLR);Serial.print("\n");
-    Serial.print("MPPT1_OVT,");Serial.print(OVT);Serial.print("\n");
-    Serial.print("MPPT1_NOC,");Serial.print(NOC);Serial.print("\n");
-    Serial.print("MPPT1_UNDV,");Serial.print(UNDV);Serial.print("\n");
-    Serial.print("MPPT1_TEMP,");Serial.print(MPPT_TEMP);Serial.print("\n");
-    Serial.print("MPPT1_UIN,");Serial.print(Uin);Serial.print("\n");
-    Serial.print("MPPT1_IIN,");Serial.print(Iin);Serial.print("\n");
-    Serial.print("MPPT1_UOUT");Serial.print(Uout);Serial.print("\n");
-    }
+    ////////////////////////////////////////////// MPPT 2.0 ////////////////////////////////////////////////////////////
 
-    ////////////////////////////////////////////// MPPT2 2.0 ////////////////////////////////////////////////////////////
-
-    // send data:  id = 0x00, standrad frame, data len = 8, stmp: data buf
-    CAN.sendMsgBuf(0x712, 0, 0, 0);
-    unsigned long canId1 = CAN.getCanId();
-    if (canId1 == 0x772){
-      
-    flagRecv = 0; //borrar flag
-    CAN.readMsgBuf(&len, buff);
-
-    int MPPT_TEMP  = buff[6]
-    int  Uin  = ((bitRead(buff[0],1)<<1|bitRead(buff[0],1))<<8)|buff[1];
-    int  Iin  = ((bitRead(buff[2],1)<<1|bitRead(buff[2],1))<<8)|buff[3];
-    int Uout  = ((bitRead(buff[4],1)<<1|bitRead(buff[4],1))<<8)|buff[5];
-    bool BVLR = (bitRead(buff[0],7));
-    bool OVT  = (bitRead(buff[0],6));
-    bool NOC  = (bitRead(buff[0],5));
-    bool UNDV = (bitRead(buff[0],4));
-    
-    
-    Serial.print("MPPT2_BVLR,");Serial.print(BVLR);Serial.print("\n");
-    Serial.print("MPPT2_OVT,");Serial.print(OVT);Serial.print("\n");
-    Serial.print("MPPT2_NOC,");Serial.print(NOC);Serial.print("\n");
-    Serial.print("MPPT2_UNDV,");Serial.print(UNDV);Serial.print("\n");
-    Serial.print("MPPT2_TEMP,");Serial.print(MPPT_TEMP);Serial.print("\n");
-    Serial.print("MPPT2_UIN,");Serial.print(Uin);Serial.print("\n");
-    Serial.print("MPPT2_IIN,");Serial.print(Iin);Serial.print("\n");
-    Serial.print("MPPT2_UOUT");Serial.print(Uout);Serial.print("\n");
-    }
+    read2Serial();
+   
+    Serial.flush();
 
     /////// Fin Loop ///////
     } 
