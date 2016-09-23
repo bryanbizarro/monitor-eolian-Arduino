@@ -51,13 +51,13 @@ START_INIT:
   if (CAN_OK == CAN.begin(CAN_125KBPS))                
   {
     Serial.println("CAN BUS Shield esta ready papi!");
-    mySerial.write((byte)255);mySerial.write((byte)0);
+    mySerial.write((byte)255);mySerial.write((byte)255);mySerial.write((byte)1);mySerial.write((byte)255);
   }
   else
   {
     Serial.println("CAN BUS Shield init fail");
     Serial.println("Init CAN BUS Shield again");
-    mySerial.write((byte)255);mySerial.write((byte)255);
+    mySerial.write((byte)255);mySerial.write((byte)255);mySerial.write((byte)2);mySerial.write((byte)255);
     delay(100);
     goto START_INIT;
   }
@@ -86,13 +86,13 @@ void loop(){
       flagRecv = 0; //borrar flag
       CAN.readMsgBuf(&len, buff);
 
-      mySerial.write((byte)255);mySerial.write((byte)0);    // Header
+      mySerial.write((byte)255);mySerial.write((byte)255);mySerial.write((byte)0);    // Header
       mySerial.print(1);                                    // ID
-      mySerial.write((byte)0);                              //
+      mySerial.write((byte)255);                              //
       for(char b : buff){
         mySerial.write((byte)b);                            // Send Data
       }
-      mySerial.write((byte)1);                              // END
+      mySerial.write((byte)255);                              // END
     
     }
 
@@ -103,13 +103,13 @@ void loop(){
     unsigned long canId2 = CAN.getCanId();
     if (canId2 == 0x772){
       
-      mySerial.write((byte)255);mySerial.write((byte)0);    // Header
+      mySerial.write((byte)255);mySerial.write((byte)255);mySerial.write((byte)0);    // Header
       mySerial.print(2);                                    // ID
-      mySerial.write((byte)0);                              //
+      mySerial.write((byte)255);                            //
       for(char b : buff){
         mySerial.write((byte)b);                            // Send Data
       }
-      mySerial.write((byte)1);                              // END
+      mySerial.write((byte)255);                              // END
     }
 
     /////// Fin Loop ///////
