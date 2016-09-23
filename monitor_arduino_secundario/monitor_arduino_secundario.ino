@@ -44,17 +44,20 @@ MCP_CAN CAN(SPI_CS_PIN);                                    // Set CS pin
 void setup()
 {
   mySerial.begin(9600);
+  Serial.begin(9600);   // Iniciar Serial para debug
   
 START_INIT:
 
-  if (CAN_OK == CAN.begin(CAN_500KBPS))                  // init can bus : baudrate = 500k
+  if (CAN_OK == CAN.begin(CAN_125KBPS))                
   {
-    mySerial.println("CAN BUS Shield esta ready papi!");
+    Serial.println("CAN BUS Shield esta ready papi!");
+    mySerial.write((byte)255);mySerial.write((byte)0);
   }
   else
   {
-    mySerial.println("CAN BUS Shield init fail");
-    mySerial.println("Init CAN BUS Shield again");
+    Serial.println("CAN BUS Shield init fail");
+    Serial.println("Init CAN BUS Shield again");
+    mySerial.write((byte)255);mySerial.write((byte)255);
     delay(100);
     goto START_INIT;
   }
@@ -80,28 +83,17 @@ void loop(){
     unsigned long canId1 = CAN.getCanId();
     if (canId1 == 0x771){
       
-    flagRecv = 0; //borrar flag
-    CAN.readMsgBuf(&len, buff);
+      flagRecv = 0; //borrar flag
+      CAN.readMsgBuf(&len, buff);
 
-    int MPPT_TEMP  = buff[6];
-    int  Uin  = ((bitRead(buff[0],1)<<1|bitRead(buff[0],1))<<8)|buff[1];
-    int  Iin  = ((bitRead(buff[2],1)<<1|bitRead(buff[2],1))<<8)|buff[3];
-    int Uout  = ((bitRead(buff[4],1)<<1|bitRead(buff[4],1))<<8)|buff[5];
-    int BVLR = (bitRead(buff[0],7));
-    int OVT  = (bitRead(buff[0],6));
-    int NOC  = (bitRead(buff[0],5));
-    int UNDV = (bitRead(buff[0],4));
+      mySerial.write((byte)255);mySerial.write((byte)0);    // Header
+      mySerial.print(1);                                    // ID
+      mySerial.write((byte)0);                              //
+      for(char b : buff){
+        mySerial.write((byte)b);                            // Send Data
+      }
+      mySerial.write((byte)1);                              // END
     
-    
-    
-    mySerial.print("MPPT1_BVLR,");mySerial.print(BVLR);mySerial.print("\n");
-    mySerial.print("MPPT1_OVT,");mySerial.print(OVT);mySerial.print("\n");
-    mySerial.print("MPPT1_NOC,");mySerial.print(NOC);mySerial.print("\n");
-    mySerial.print("MPPT1_UNDV,");mySerial.print(UNDV);mySerial.print("\n");
-    mySerial.print("MPPT1_TEMP,");mySerial.print(MPPT_TEMP);mySerial.print("\n");
-    mySerial.print("MPPT1_UIN,");mySerial.print(Uin);mySerial.print("\n");
-    mySerial.print("MPPT1_IIN,");mySerial.print(Iin);mySerial.print("\n");
-    mySerial.print("MPPT1_UOUT");mySerial.print(Uout);mySerial.print("\n");
     }
 
     ////////////////////////////////////////////// MPPT2 2.0 ////////////////////////////////////////////////////////////
@@ -111,27 +103,13 @@ void loop(){
     unsigned long canId2 = CAN.getCanId();
     if (canId2 == 0x772){
       
-    flagRecv = 0; //borrar flag
-    CAN.readMsgBuf(&len, buff);
-
-    int MPPT_TEMP  = buff[6];
-    int  Uin  = ((bitRead(buff[0],1)<<1|bitRead(buff[0],1))<<8)|buff[1];
-    int  Iin  = ((bitRead(buff[2],1)<<1|bitRead(buff[2],1))<<8)|buff[3];
-    int Uout  = ((bitRead(buff[4],1)<<1|bitRead(buff[4],1))<<8)|buff[5];
-    int BVLR = (bitRead(buff[0],7));
-    int OVT  = (bitRead(buff[0],6));
-    int NOC  = (bitRead(buff[0],5));
-    int UNDV = (bitRead(buff[0],4));
-    
-    
-    mySerial.print("MPPT2_BVLR,");mySerial.print(BVLR);mySerial.print("\n");
-    mySerial.print("MPPT2_OVT,");mySerial.print(OVT);mySerial.print("\n");
-    mySerial.print("MPPT2_NOC,");mySerial.print(NOC);mySerial.print("\n");
-    mySerial.print("MPPT2_UNDV,");mySerial.print(UNDV);mySerial.print("\n");
-    mySerial.print("MPPT2_TEMP,");mySerial.print(MPPT_TEMP);mySerial.print("\n");
-    mySerial.print("MPPT2_UIN,");mySerial.print(Uin);mySerial.print("\n");
-    mySerial.print("MPPT2_IIN,");mySerial.print(Iin);mySerial.print("\n");
-    mySerial.print("MPPT2_UOUT");mySerial.print(Uout);mySerial.print("\n");
+      mySerial.write((byte)255);mySerial.write((byte)0);    // Header
+      mySerial.print(2);                                    // ID
+      mySerial.write((byte)0);                              //
+      for(char b : buff){
+        mySerial.write((byte)b);                            // Send Data
+      }
+      mySerial.write((byte)1);                              // END
     }
 
     /////// Fin Loop ///////
