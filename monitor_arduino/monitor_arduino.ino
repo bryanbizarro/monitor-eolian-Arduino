@@ -47,7 +47,9 @@ float input1;                         // received value
 
 // Read2Serial vars
 int MPPTId;
-char c;
+char inChar;
+int index=0;
+char inData[13];
 
 
 
@@ -88,7 +90,66 @@ void MCP2515_ISR()
 
 
 bool read2Serial(){
-  SERIAL2_START:
+  while(mySerial.available()){
+    //Serial.println("SerialAvailable");
+    if(index < 12){
+      //Serial.print(index);Serial.println(" < 13");
+      inChar = mySerial.read();
+      inData[index] = inChar;
+      index++;
+      //Serial.print("inChar: ");Serial.println(inChar);
+    } else {
+      inChar = mySerial.read();
+      inData[index] = inChar;
+      index++;
+      //Serial.print("inChar: ");Serial.println(inChar);
+      //Serial.println("buff full");
+      //Serial.print(inData[0]);Serial.print(inData[1]);Serial.print(inData[2]);Serial.print(inData[3]);
+      //Serial.print(inData[4]);Serial.print(inData[5]);Serial.print(inData[6]);Serial.print(inData[7]);
+      //Serial.print(inData[8]);Serial.print(inData[9]);Serial.print(inData[10]);Serial.print(inData[11]);
+      //Serial.println(inData[12]);
+      if((inData[0] == 255) && (inData[1] == 255) && (inData[4] == 255) && (inData[12] == 255)){
+        //Serial.println("data ok");
+        if(inData[2] == 0){  //REVISAR que igualdad se cumpla!!!
+          MPPTId = inData[3];
+          index = 0;
+          for(int j = 5;j<12;j++){
+            buff[index] = inData[j];
+          }
+          int MPPT_TEMP  = buff[6];
+          int  Uin  = ((bitRead(buff[0],1)<<1|bitRead(buff[0],0))<<8)|buff[1];
+          int  Iin  = ((bitRead(buff[2],1)<<1|bitRead(buff[2],0))<<8)|buff[3];
+          int Uout  = ((bitRead(buff[4],1)<<1|bitRead(buff[4],0))<<8)|buff[5];
+          int BVLR = (bitRead(buff[0],7));
+          int OVT  = (bitRead(buff[0],6));
+          int NOC  = (bitRead(buff[0],5));
+          int UNDV = (bitRead(buff[0],4));
+  
+          Serial.print("MPPT");Serial.print(MPPTId);Serial.print("_BVLR,");Serial.print(BVLR);Serial.print("\n");
+          Serial.print("MPPT");Serial.print(MPPTId);Serial.print("_OVT,");Serial.print(OVT);Serial.print("\n");
+          Serial.print("MPPT");Serial.print(MPPTId);Serial.print("_NOC,");Serial.print(NOC);Serial.print("\n");
+          Serial.print("MPPT");Serial.print(MPPTId);Serial.print("_UNDV,");Serial.print(UNDV);Serial.print("\n");
+          Serial.print("MPPT");Serial.print(MPPTId);Serial.print("_TEMP,");Serial.print(MPPT_TEMP);Serial.print("\n");
+          Serial.print("MPPT");Serial.print(MPPTId);Serial.print("_UIN,");Serial.print(Uin);Serial.print("\n");
+          Serial.print("MPPT");Serial.print(MPPTId);Serial.print("_IIN,");Serial.print(Iin);Serial.print("\n");
+          Serial.print("MPPT");Serial.print(MPPTId);Serial.print("_UOUT");Serial.print(Uout);Serial.print("\n");
+        } else if (inData[2] == 2){
+          Serial.print("ARDUINO2_ERROR");
+        } else if (inData[2] == 1){
+          Serial.print("ARDUINO_ReadyPapi!");
+        } else {
+          Serial.print("PCK_LABEL_ERROR");
+        }
+      } else {
+        for(int j = 1; j<13;j++){
+          inData[j-1] = inData[j];
+        }
+        index -= 1;
+      }
+    }
+  }
+  
+  /*SERIAL2_START:
   if(mySerial.available()){
       c = mySerial.read();
       if(c == 255){
