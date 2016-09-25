@@ -23,6 +23,7 @@ char str[20];
 
 unsigned char buff[7];
 
+unsigned char dataToSend[13];
 
 
 
@@ -48,17 +49,23 @@ void setup()
 {
   mySerial.begin(9600);
   Serial.begin(9600);   // Iniciar Serial para debug
+  dataToSend[0]   = 255; //Header
+  dataToSend[1]   = 255; //Header
+  dataToSend[4]   = 255; //Middle
+  dataToSend[12]  = 255; //END
     
 START_INIT:
 
   if (CAN_OK == CAN.begin(CAN_125KBPS))                
   {
     Serial.println("CAN BUS Shield esta ready papi!");
+    dataToSend[2] = 1;
   }
   else
   {
     Serial.println("CAN BUS Shield init fail");
     Serial.println("Init CAN BUS Shield again");
+    dataToSend[2] = 2;
     delay(100);
     goto START_INIT;
   }
@@ -76,6 +83,8 @@ void MCP2515_ISR()
 }
 
 void SendMsg(){
+  for(unsigned char charToSend:dataToSend){
+    mySerial.write(charToSend);
   }
 }
 
@@ -91,7 +100,10 @@ void loop(){
       flagRecv = 0; //borrar flag
       CAN.readMsgBuf(&len, buff);
 
+      dataToSend[2] = 0;
+      dataToSend[3] = 1;
       for(int j = 5; j < 12; j++){
+        dataToSend[j] = buff[j-5];
       }
       SendMsg();
       /*
@@ -111,7 +123,10 @@ void loop(){
     CAN.sendMsgBuf(0x712, 0, 0, 0);
     unsigned long canId2 = CAN.getCanId();
     if (canId2 == 0x772){
+      dataToSend[2] = 0;
+      dataToSend[3] = 2;
       for(int j = 5; j < 12; j++){
+        dataToSend[j] = buff[j-5];
       }
       SendMsg();
 
