@@ -90,8 +90,8 @@ void MCP2515_ISR()
 
 
 bool read2Serial(){
-  while(mySerial.available()){
-    //Serial.println("SerialAvailable");
+  while(mySerial.available()){  //Revisar si es necesario un timeout
+    //Serial.println("SerialIsAvailable");
     if(index < 12){
       //Serial.print(index);Serial.println(" < 13");
       inChar = mySerial.read();
@@ -138,7 +138,7 @@ bool read2Serial(){
         } else if (inData[2] == 1){
           Serial.print("ARDUINO_ReadyPapi!");
         } else {
-          Serial.print("PCK_LABEL_ERROR");
+          Serial.print("BIT_ERROR_READERROR");
         }
       } else {
         for(int j = 1; j<13;j++){

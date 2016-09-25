@@ -23,6 +23,9 @@ char str[20];
 
 unsigned char buff[7];
 
+
+
+
 /* Excel
 const int serialBufferSize = 32;      // buffer size for input
 char  serialBuffer[serialBufferSize]; // buffer for input
@@ -45,19 +48,17 @@ void setup()
 {
   mySerial.begin(9600);
   Serial.begin(9600);   // Iniciar Serial para debug
-  
+    
 START_INIT:
 
   if (CAN_OK == CAN.begin(CAN_125KBPS))                
   {
     Serial.println("CAN BUS Shield esta ready papi!");
-    mySerial.write((byte)255);mySerial.write((byte)255);mySerial.write((byte)1);mySerial.write((byte)255);
   }
   else
   {
     Serial.println("CAN BUS Shield init fail");
     Serial.println("Init CAN BUS Shield again");
-    mySerial.write((byte)255);mySerial.write((byte)255);mySerial.write((byte)2);mySerial.write((byte)255);
     delay(100);
     goto START_INIT;
   }
@@ -74,6 +75,10 @@ void MCP2515_ISR()
   flagRecv = 1;
 }
 
+void SendMsg(){
+  }
+}
+
 void loop(){
   
   ////////////////////////////////////////////// MPPT1 2.0 ////////////////////////////////////////////////////////////
@@ -86,6 +91,10 @@ void loop(){
       flagRecv = 0; //borrar flag
       CAN.readMsgBuf(&len, buff);
 
+      for(int j = 5; j < 12; j++){
+      }
+      SendMsg();
+      /*
       mySerial.write((byte)255);mySerial.write((byte)255);mySerial.write((byte)0);    // Header
       mySerial.print(1);                                    // ID
       mySerial.write((byte)255);                              //
@@ -93,7 +102,7 @@ void loop(){
         mySerial.write((byte)b);                            // Send Data
       }
       mySerial.write((byte)255);                              // END
-    
+    */
     }
 
     ////////////////////////////////////////////// MPPT2 2.0 ////////////////////////////////////////////////////////////
@@ -102,7 +111,11 @@ void loop(){
     CAN.sendMsgBuf(0x712, 0, 0, 0);
     unsigned long canId2 = CAN.getCanId();
     if (canId2 == 0x772){
-      
+      for(int j = 5; j < 12; j++){
+      }
+      SendMsg();
+
+      /*
       mySerial.write((byte)255);mySerial.write((byte)255);mySerial.write((byte)0);    // Header
       mySerial.print(2);                                    // ID
       mySerial.write((byte)255);                            //
@@ -110,10 +123,12 @@ void loop(){
         mySerial.write((byte)b);                            // Send Data
       }
       mySerial.write((byte)255);                              // END
+
+      */
     }
 
     /////// Fin Loop ///////
-    } 
+} 
 
 
 
