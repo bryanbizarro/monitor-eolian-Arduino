@@ -32,7 +32,8 @@ unsigned char COM_SW_REV[2] = {0x44, 0};
 unsigned char CCP_A2D_BATCH_READ1[1] = {0x1B};
 
 //
-int del = 100;
+
+int del = 10;    //Delay de solicitud a los Kelly
 int i   = 0; 
 
 /// Rx
