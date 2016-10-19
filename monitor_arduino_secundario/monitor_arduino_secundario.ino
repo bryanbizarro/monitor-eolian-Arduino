@@ -47,8 +47,8 @@ MCP_CAN CAN(SPI_CS_PIN);                                    // Set CS pin
 
 void setup()
 {
-  mySerial.begin(115200);
-  Serial.begin(115200);   // Iniciar Serial para debug
+  mySerial.begin(57600);
+  Serial.begin(57600);   // Iniciar Serial para debug
   dataToSend[0]   = 255; //Header
   dataToSend[1]   = 255; //Header
   dataToSend[4]   = 255; //Middle

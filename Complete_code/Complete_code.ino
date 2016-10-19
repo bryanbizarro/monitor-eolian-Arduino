@@ -72,8 +72,8 @@ MCP_CAN CAN(SPI_CS_PIN);                                    // Set CS pin
 
 void setup()
 {
-  mySerial.begin(115200);
-  Serial.begin(115200);
+  mySerial.begin(57600);
+  Serial.begin(57600);
 
 START_INIT:
 
@@ -149,7 +149,7 @@ bool read2Serial(){
         } else if (inData[2] == 2){
           Serial.print("ARDUINO2_ERROR");
         } else if (inData[2] == 1){
-          Serial.print("ARDUINO_ReadyPapi!");
+          Serial.print("ARDUINO2_ReadyPapi!");
         } else {
           Serial.print("BIT_ERROR_READERROR");
         }
