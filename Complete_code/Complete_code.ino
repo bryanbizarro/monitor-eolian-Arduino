@@ -271,99 +271,148 @@ void loop(){
 //  }
 
   
-  if( canId_BMS == 0x100)
-  {
-      int packSOC         = buff_BMS[0];
-      int packCurrent     = (buff_BMS[1]<<8)|buff_BMS[2];
-      int packInstVolt    = (buff_BMS[3]<<8)|buff_BMS[4];
-      int packOpenVolt    = (buff_BMS[5]<<8)|buff_BMS[6];
-      
-      
-//      int relayState      = buff_BMS[0];
-//      int maxCellNumber   = buff_BMS[1];
-//      int populatedCells  = buff_BMS[2];
-//      int rollingCounter  = buff_BMS[3];
-//      int packCCL         = buff_BMS[4];
-//      int packDCL         = buff_BMS[5];
-//      
-//      int packAmphours    = buff_BMS[7];
-
-      Serial.print("PACK_SOC,");Serial.print(packSOC);Serial.print("\n");
-      Serial.print("PACK_CURRENT,");Serial.print(packCurrent);Serial.print("\n");
-      Serial.print("PACK_INST_VTG,");Serial.print(packInstVolt);Serial.print("\n");
-      Serial.print("PACK_OPEN_VTG,");Serial.print(packOpenVolt);Serial.print("\n");
-
-//      Serial.print("REL_STATE,");Serial.print(relayState);Serial.print("\n");
-//      Serial.print("MAX_CELL_NUM,");Serial.print(maxCellNumber);Serial.print("\n");
-//      Serial.print("POP_CELLS,");Serial.print(populatedCells);Serial.print("\n");
-//      Serial.print("ROLLING_COUNT,");Serial.print(rollingCounter);Serial.print("\n");
-//      Serial.print("PACK_CCL,");Serial.print(packCCL);Serial.print("\n");
-//      Serial.print("PACK_DCL,");Serial.print(packDCL);Serial.print("\n");
-//      Serial.print("PACK_AMPH,");Serial.print(packAmphours);Serial.print("\n");
-  }
-  
   if( canId_BMS == 0x101)
   {
-      int packAbsCurrent  = (buff_BMS[0]<<8)|buff_BMS[1];
-      int maximumPackVolt = (buff_BMS[4]<<8)|buff_BMS[5];
-      int minimumPackVolt = (buff_BMS[6]<<8)|buff_BMS[7];
-      
-      
-//      int packResistance  = (buff_BMS[6]<<8)|buff_BMS[7];
-
-      Serial.print("PACK_ABSCURRENT,");Serial.print(packAbsCurrent);Serial.print("\n");
-      Serial.print("MAXIM_PACK_VTG,");Serial.print(maximumPackVolt);Serial.print("\n");
-      Serial.print("MINIM_PACK_VTG,");Serial.print(minimumPackVolt);Serial.print("\n");
-      
-//      Serial.print("PACK_RESIST,");Serial.print(packResistance);Serial.print("\n");
+      int Voltage_total = (buff_BMS[0]<<8)|buff_BMS[1];
+      int Max_Vtg=(buff_BMS[2]<<8)|buff_BMS[3];
+      int Min_Vtg=(buff_BMS[4]<<8)|buff_BMS[5];
+  
+      Serial.print("PACK_VTG,");Serial.print(Voltage_total);Serial.print("\n");
+      Serial.print("MAX_VTG,");Serial.print(Max_Vtg*0.1);Serial.print("\n");
+      Serial.print("MIN_VTG,");Serial.print(Min_Vtg*0.1);Serial.print("\n");
   }
 
-//  if( canId_BMS == 0x102)
-//  {
-//      int packDOD         = buff_BMS[0];
-//      int packHealth      = buff_BMS[1];
-//      int packSummedVolt  = (buff_BMS[2]<<8)|buff_BMS[3];
-//      
-//  
-//      Serial.print("PACK_DOD,");Serial.print(packDOD);Serial.print("\n");
-//      Serial.print("PACK_HEALTH,");Serial.print(packHealth);Serial.print("\n");
-//      Serial.print("PACK_SUMMED_VOLT,");Serial.print(packSummedVolt);Serial.print("\n");
-//      
-//  }
+  if( canId_BMS == 0x102)
+  {
+      int highTemperature = buff_BMS[0];
+      int lowTemperature = buff_BMS[1];
+      int highThermistorID = buff_BMS[2];
+      int lowThermistorID = buff_BMS[3];
+      
+      Serial.print("HIGH_TEMP,");Serial.print(highTemperature);Serial.print("\n");
+      Serial.print("LOW_TEMP,");Serial.print(lowTemperature);Serial.print("\n");
+      Serial.print("HIGH_T_ID,");Serial.print(highThermistorID);Serial.print("\n");
+      Serial.print("LOW_T_ID,");Serial.print(lowThermistorID);Serial.print("\n");
+  }
 
-//  if( canId_BMS == 0x103)
-//  {
-//      
-//      int totalPackCycles     = buff_BMS[2];
-//      int currentLimitStatus  = buff_BMS[3];
-//      int packCCLKW           = (buff_BMS[4]<<8)|buff_BMS[5];
-//      int packDCLKW           = (buff_BMS[6]<<8)|buff_BMS[7];
-//  
-//      
-//      Serial.print("TOTAL_PACKCYCLES,");Serial.print(totalPackCycles);Serial.print("\n");
-//      Serial.print("CUR_LIM_STAT,");Serial.print(currentLimitStatus);Serial.print("\n");
-//      Serial.print("PACK_CCLKW,");Serial.print(packCCLKW);Serial.print("\n");
-//      Serial.print("PACK_DCLKW,");Serial.print(packDCLKW);Serial.print("\n");
-//  }
+  if(canId_BMS == 0x03B)
+  {
+      signed corriente= (buff_BMS[0]<<8)|buff_BMS[1];      
+      
+      Serial.print("CURRENT,");Serial.print(corriente);Serial.print("\n");
 
-//  if( canId_BMS == 0x104)
-//  {
-//      int maximumPackDCL    = buff_BMS[0];
-//      int maximumPackCCL    = buff_BMS[1];
-//      int simulatedSOC      = buff_BMS[2];
-//      int simulatedMode     = buff_BMS[3];
-//      int simulatedReqMode  = buff_BMS[4];
-//      int fanSpeed          = buff_BMS[5];
-//      int reqFanSpeed       = buff_BMS[6];
-//      
-//      Serial.print("MAX_PACK_DCL,");Serial.print(maximumPackDCL);Serial.print("\n");
-//      Serial.print("MAX_PACK_CCL,");Serial.print(maximumPackCCL);Serial.print("\n");
-//      Serial.print("SIM_SOC,");Serial.print(simulatedSOC);Serial.print("\n");
-//      Serial.print("SIM_MODE,");Serial.print(simulatedMode);Serial.print("\n");
-//      Serial.print("SIM_REQ_MODE,");Serial.print(simulatedReqMode);Serial.print("\n");
-//      Serial.print("FAN_SPEED,");Serial.print(fanSpeed);Serial.print("\n");
-//      Serial.print("REQFAN_SPEED,");Serial.print(reqFanSpeed);Serial.print("\n");
-//  }
+  } 
+    
+ if(canId_BMS == 0x3CB){
+    int packDCL = buff_BMS[0];
+    int packCCL = buff_BMS[1];
+    int simulatedSOC = buff_BMS[3];
+
+    Serial.print("PACK_DCL,");Serial.print(packDCL);Serial.print("\n");
+    Serial.print("PACK_CCL,");Serial.print(packCCL);Serial.print("\n");
+    Serial.print("SIM_SOC,");Serial.print(simulatedSOC);Serial.print("\n");
+
+  } 
+
+  if(canId_BMS == 0x6B2){
+    int relayState = buff_BMS[0];
+    int packSOC = buff_BMS[1];
+    int packResistance = (buff_BMS[2]<<8)|buff_BMS[3];
+    int packOpenVtg = (buff_BMS[4]<<8)|buff_BMS[5];
+    int packAmphours = buff_BMS[6];
+
+    Serial.print("REL_STATE,");Serial.print(relayState);Serial.print("\n");
+    Serial.print("PACK_SOC,");Serial.print(packSOC);Serial.print("\n");
+    Serial.print("PACK_RES,");Serial.print(packResistance);Serial.print("\n");
+    Serial.print("PACK_OPENVTG,");Serial.print(packOpenVtg);Serial.print("\n");
+    Serial.print("PACK_AMPH,");Serial.print(packAmphours);Serial.print("\n");
+
+  }
+
+  if (canId_BMS == 0x02B) {
+    int summVolt = (buff_BMS[0]<<8)|buff_BMS[1];
+    int averageTemp = (buff_BMS[2]);
+    int packcycles = (buff_BMS[3]);
+    int high_cell_volt = (buff_BMS[5]<<8)|buff_BMS[6];
+    int low_cell_volt = (buff_BMS[7]<<8)|buff_BMS[8];
+
+    Serial.print("SUMM_VOLT,");Serial.print(summVolt);Serial.print("\n");
+    Serial.print("AV_TEMP,");Serial.print(averageTemp);Serial.print("\n");
+    Serial.print("PACK_CYCLES,");Serial.print(packcycles);Serial.print("\n");
+    Serial.print("HIGH_CELL_VOLT,");Serial.print(high_cell_volt);Serial.print("\n");
+    Serial.print("LOW_CELL_VOLT,");Serial.print(low_cell_volt);Serial.print("\n");
+    
+  }
+
+  if (canId_BMS == 0x006) {
+    int averageTemp = (buff_BMS[0]);
+
+    Serial.print("AV_TEMP,");Serial.print(averageTemp);Serial.print("\n");
+    
+  }
+
+    
+  if (canId_BMS == 0x036) 
+  {
+      int cellID = (buff_BMS[0]);
+      int instVolt = (buff_BMS[1]<<8)|buff_BMS[2];
+      int internalResist =  (buff_BMS[3]<<8)|buff_BMS[4];
+      int openVolt =  (buff_BMS[5]<<8)|buff_BMS[6];
+
+      Serial.print("cellID,");Serial.print(cellID);Serial.print("\n");
+      Serial.print("Inst_Volt,");Serial.print(instVolt);Serial.print("\n");
+      Serial.print("Inst_Resist,");Serial.print(internalResist);Serial.print("\n");
+      Serial.print("Open_Volt,");Serial.print(openVolt);Serial.print("\n");
+      
+  }
+
+  if (canId_BMS == 0x080)
+  {
+     
+      int ID_80 = (buff_BMS[0]);
+      int TEMP_80 = (buff_BMS[1]);
+      int WHAT_80 = (buff_BMS[3]);
+      
+
+     
+        Serial.print("ID,");Serial.print(ID_80);Serial.print("\n");
+        Serial.print("TEMP,");Serial.print(TEMP_80);Serial.print("\n");
+        Serial.print("WHAT_BYTE_3,");Serial.print(WHAT_80);Serial.print("\n");
+  }
+
+  if (canId_BMS == 0x081)
+  {
+     
+      int ID = (buff_BMS[0]);
+      int TEMP = (buff_BMS[1]);
+      int WHAT = (buff_BMS[3]);
+      
+
+     
+      Serial.print("ID,");Serial.print(ID);Serial.print("\n");
+      Serial.print("TEMP,");Serial.print(TEMP);Serial.print("\n");
+      Serial.print("WHAT,");Serial.print(WHAT);Serial.print("\n");
+    
+  }
+
+  if (canId_BMS == 0x082)
+  {
+   
+    int ID_2 = (buff_BMS[1]);
+    int TEMP_2 = (buff_BMS[2]);
+    int WHAT_2 = (buff_BMS[4]);
+    int WHAT_3 = (buff_BMS[5]);
+    int WHAT_4 = (buff_BMS[7]);
+    
+
+   
+    Serial.print("ID_2,");Serial.print(ID_2);Serial.print("\n");
+    Serial.print("TEMP_2,");Serial.print(TEMP_2);Serial.print("\n");
+    Serial.print("BYTE_4,");Serial.print(WHAT_2);Serial.print("\n");
+    Serial.print("BYTE_5,");Serial.print(WHAT_3);Serial.print("\n");
+    Serial.print("BYTE_7,");Serial.print(WHAT_4);Serial.print("\n");
+  
+  }
     
   ////////////////                     Fin BMS  ///////////////////////////////////////////////////
 
