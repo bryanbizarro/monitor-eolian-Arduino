@@ -13,13 +13,24 @@ SoftwareSerial mySerial(rx, tx);
 
 //  END SOFTWARE SERIAL
 
+/////// KELLY //////////
+
+unsigned char CCP_A2D_BATCH_READ1[1] = {0x1B};
+unsigned char CCP_A2D_BATCH_READ2[1] = {0x1A};
+unsigned char CPP_MONITOR1[1] = {0x33};
+unsigned char CPP_MONITOR2[1] = {0x37};
+unsigned char COM_SW_ACC[2] = {0x42, 0};
+unsigned char COM_SW_BRK[2] = {0x43, 0};
+unsigned char COM_SW_REV[2] = {0x44, 0};
+
+////// END KELLY ///////
+
 
 // the cs pin of the version after v1.1 is default to D9
 // v0.9b and v1.0 is default D10
 const int SPI_CS_PIN = 9;
 ////////////////////////////////////////////////////////////////////
 /// Tx
-unsigned char CCP_A2D_BATCH_READ1[1] = {0x1B};
 
 int del = 100;
 int i   = 0; 
@@ -50,6 +61,9 @@ int MPPTId;
 char inChar;
 int index=0;
 char inData[13];
+
+
+long lastTime = 0;
 
 
 
@@ -148,95 +162,6 @@ bool read2Serial(){
       }
     }
   }
-  
-  /*SERIAL2_START:
-  if(mySerial.available()){
-      c = mySerial.read();
-      if(c == 255){
-        c = mySerial.read();
-        if(c == 255){
-          SERIAL2_STEP2:
-          c = mySerial.read();
-          if(c == 0){
-            MPPTId = mySerial.read()-48;
-            c = mySerial.read();
-            if(c == 255){
-              mySerial.readBytes(buff,7);
-              c = mySerial.read();
-              if(c == 255){
-                
-                int MPPT_TEMP  = buff[6];
-                int  Uin  = ((bitRead(buff[0],1)<<1|bitRead(buff[0],0))<<8)|buff[1];
-                int  Iin  = ((bitRead(buff[2],1)<<1|bitRead(buff[2],0))<<8)|buff[3];
-                int Uout  = ((bitRead(buff[4],1)<<1|bitRead(buff[4],0))<<8)|buff[5];
-                int BVLR = (bitRead(buff[0],7));
-                int OVT  = (bitRead(buff[0],6));
-                int NOC  = (bitRead(buff[0],5));
-                int UNDV = (bitRead(buff[0],4));
-  
-                Serial.print("MPPT");Serial.print(MPPTId);Serial.print("_BVLR,");Serial.print(BVLR);Serial.print("\n");
-                Serial.print("MPPT");Serial.print(MPPTId);Serial.print("_OVT,");Serial.print(OVT);Serial.print("\n");
-                Serial.print("MPPT");Serial.print(MPPTId);Serial.print("_NOC,");Serial.print(NOC);Serial.print("\n");
-                Serial.print("MPPT");Serial.print(MPPTId);Serial.print("_UNDV,");Serial.print(UNDV);Serial.print("\n");
-                Serial.print("MPPT");Serial.print(MPPTId);Serial.print("_TEMP,");Serial.print(MPPT_TEMP);Serial.print("\n");
-                Serial.print("MPPT");Serial.print(MPPTId);Serial.print("_UIN,");Serial.print(Uin);Serial.print("\n");
-                Serial.print("MPPT");Serial.print(MPPTId);Serial.print("_IIN,");Serial.print(Iin);Serial.print("\n");
-                Serial.print("MPPT");Serial.print(MPPTId);Serial.print("_UOUT");Serial.print(Uout);Serial.print("\n");
-  
-                
-                return true;
-              }
-            }
-            Serial.print("MISSING_MSG");
-            return false;
-            
-          } else if(c == 2){
-            c = mySerial.read();
-            if(c == 255){
-              Serial.print("ARDUINO2_CANERR");
-              return true;
-            } else {
-              Serial.print("MISSING_MSG");
-              return false;
-            }
-          } else if(c == 1) {
-            c = mySerial.read();
-            if(c == 255){
-              Serial.print("ARDUINO2_READY4YOU");
-              return true;
-            } else {
-              Serial.print("MISSING_MSG");
-              return false;
-            }
-          } else if(c == 255){
-            goto SERIAL2_STEP2;
-          }
-        } else {
-          goto SERIAL2_START;
-        }
-
-            
-      } else {
-        goto SERIAL2_START;
-      }
-  }
-      
-      
-      
-      
-      /*
-      
-      else if(c == 1) {
-        c = mySerial.read();      
-        if(c == 1) {
-          Serial.print("ARDUINO2_ERR");
-          return true;
-        } else if(== 0)){
-          Serial.print("ARDUINO2_READY4YOU");
-          return true;
-      }
-    }
-    return false;*/
 }
 
 
@@ -249,111 +174,30 @@ void loop(){
 ////////////////////  BMS  ////////////////////
   unsigned long canId_BMS = CAN.getCanId();
 
-//  if(canId_BMS == 1570){
-//   Serial.print("XLS,write,DatosMB,G4,");Serial.print(bitRead(buff[0],0));Serial.print("\n");
-//
-//   Serial.print("XLS,write,BMS,A");Serial.print(idxBMS + 3);Serial.print(",");Serial.print("%date%");Serial.print("\n");
-//   Serial.print("XLS,write,BMS,B");Serial.print(idxBMS + 3);Serial.print(",");Serial.print("%time%");Serial.print("\n");
-//   Serial.print("XLS,write,BMS,C");Serial.print(idxBMS + 3);Serial.print(",");Serial.print(idxBMS);Serial.print("\n");
-//   Serial.print("XLS,write,BMS,D");Serial.print(idxBMS + 3);Serial.print(",");Serial.print(bitRead(buff[0],0));Serial.print("\n");
-//   
-//  }
-
   if( canId_BMS == 0x100)
   {
       int packSOC         = buff_BMS[0];
       int packCurrent     = (buff_BMS[1]<<8)|buff_BMS[2];
       int packInstVolt    = (buff_BMS[3]<<8)|buff_BMS[4];
       int packOpenVolt    = (buff_BMS[5]<<8)|buff_BMS[6];
-      
-      
-//      int relayState      = buff_BMS[0];
-//      int maxCellNumber   = buff_BMS[1];
-//      int populatedCells  = buff_BMS[2];
-//      int rollingCounter  = buff_BMS[3];
-//      int packCCL         = buff_BMS[4];
-//      int packDCL         = buff_BMS[5];
-//      
-//      int packAmphours    = buff_BMS[7];
 
       Serial.print("PACK_SOC,");Serial.print(packSOC);Serial.print("\n");
       Serial.print("PACK_CURRENT,");Serial.print(packCurrent);Serial.print("\n");
       Serial.print("PACK_INST_VTG,");Serial.print(packInstVolt);Serial.print("\n");
       Serial.print("PACK_OPEN_VTG,");Serial.print(packOpenVolt);Serial.print("\n");
 
-//      Serial.print("REL_STATE,");Serial.print(relayState);Serial.print("\n");
-//      Serial.print("MAX_CELL_NUM,");Serial.print(maxCellNumber);Serial.print("\n");
-//      Serial.print("POP_CELLS,");Serial.print(populatedCells);Serial.print("\n");
-//      Serial.print("ROLLING_COUNT,");Serial.print(rollingCounter);Serial.print("\n");
-//      Serial.print("PACK_CCL,");Serial.print(packCCL);Serial.print("\n");
-//      Serial.print("PACK_DCL,");Serial.print(packDCL);Serial.print("\n");
-//      Serial.print("PACK_AMPH,");Serial.print(packAmphours);Serial.print("\n");
   }
-  
-  if( canId_BMS == 0x101)
+  else if( canId_BMS == 0x101)
   {
       int packAbsCurrent  = (buff_BMS[0]<<8)|buff_BMS[1];
       int maximumPackVolt = (buff_BMS[4]<<8)|buff_BMS[5];
       int minimumPackVolt = (buff_BMS[6]<<8)|buff_BMS[7];
-      
-      
-//      int packResistance  = (buff_BMS[6]<<8)|buff_BMS[7];
 
       Serial.print("PACK_ABSCURRENT,");Serial.print(packAbsCurrent);Serial.print("\n");
       Serial.print("MAXIM_PACK_VTG,");Serial.print(maximumPackVolt);Serial.print("\n");
       Serial.print("MINIM_PACK_VTG,");Serial.print(minimumPackVolt);Serial.print("\n");
-      
-//      Serial.print("PACK_RESIST,");Serial.print(packResistance);Serial.print("\n");
   }
-
-//  if( canId_BMS == 0x102)
-//  {
-//      int packDOD         = buff_BMS[0];
-//      int packHealth      = buff_BMS[1];
-//      int packSummedVolt  = (buff_BMS[2]<<8)|buff_BMS[3];
-//      
-//  
-//      Serial.print("PACK_DOD,");Serial.print(packDOD);Serial.print("\n");
-//      Serial.print("PACK_HEALTH,");Serial.print(packHealth);Serial.print("\n");
-//      Serial.print("PACK_SUMMED_VOLT,");Serial.print(packSummedVolt);Serial.print("\n");
-//      
-//  }
-
-//  if( canId_BMS == 0x103)
-//  {
-//      
-//      int totalPackCycles     = buff_BMS[2];
-//      int currentLimitStatus  = buff_BMS[3];
-//      int packCCLKW           = (buff_BMS[4]<<8)|buff_BMS[5];
-//      int packDCLKW           = (buff_BMS[6]<<8)|buff_BMS[7];
-//  
-//      
-//      Serial.print("TOTAL_PACKCYCLES,");Serial.print(totalPackCycles);Serial.print("\n");
-//      Serial.print("CUR_LIM_STAT,");Serial.print(currentLimitStatus);Serial.print("\n");
-//      Serial.print("PACK_CCLKW,");Serial.print(packCCLKW);Serial.print("\n");
-//      Serial.print("PACK_DCLKW,");Serial.print(packDCLKW);Serial.print("\n");
-//  }
-
-//  if( canId_BMS == 0x104)
-//  {
-//      int maximumPackDCL    = buff_BMS[0];
-//      int maximumPackCCL    = buff_BMS[1];
-//      int simulatedSOC      = buff_BMS[2];
-//      int simulatedMode     = buff_BMS[3];
-//      int simulatedReqMode  = buff_BMS[4];
-//      int fanSpeed          = buff_BMS[5];
-//      int reqFanSpeed       = buff_BMS[6];
-//      
-//      Serial.print("MAX_PACK_DCL,");Serial.print(maximumPackDCL);Serial.print("\n");
-//      Serial.print("MAX_PACK_CCL,");Serial.print(maximumPackCCL);Serial.print("\n");
-//      Serial.print("SIM_SOC,");Serial.print(simulatedSOC);Serial.print("\n");
-//      Serial.print("SIM_MODE,");Serial.print(simulatedMode);Serial.print("\n");
-//      Serial.print("SIM_REQ_MODE,");Serial.print(simulatedReqMode);Serial.print("\n");
-//      Serial.print("FAN_SPEED,");Serial.print(fanSpeed);Serial.print("\n");
-//      Serial.print("REQFAN_SPEED,");Serial.print(reqFanSpeed);Serial.print("\n");
-//  }
-
-  if( canId_BMS == 0x102)
+  else if( canId_BMS == 0x102)
   {
       int highTemperature   = buff_BMS[0];
       int highThermistorID  = buff_BMS[1];
@@ -369,48 +213,9 @@ void loop(){
       Serial.print("AVG_TEMP,");Serial.print(avgTemp);Serial.print("\n");
       Serial.print("INT_TEMP,");Serial.print(internalTemp);Serial.print("\n");
   }
-
-//  if( canId_BMS == 0x106)
-//  {
-//      int highCellVolt  = (buff_BMS[0]<<8)|buff_BMS[1];
-//      int highCellVID   = buff_BMS[2];
-//      int lowCellVolt   = (buff_BMS[3]<<8)|buff_BMS[4];
-//      int lowCellVID    = buff_BMS[5];
-//      int avgCellVolt   = (buff_BMS[6]<<8)|buff_BMS[7];
-//      
-//      Serial.print("HIGH_CELLVOLT,");Serial.print(highCellVolt);Serial.print("\n");
-//      Serial.print("LOW_CELLVOLT,");Serial.print(lowCellVolt);Serial.print("\n");
-//      Serial.print("HIGH_CELLVID,");Serial.print(highCellVID);Serial.print("\n");
-//      Serial.print("LOW_CELLVID,");Serial.print(lowCellVID);Serial.print("\n");
-//      Serial.print("AVG_CELLVOLT,");Serial.print(avgCellVolt);Serial.print("\n");
-//  }
-
-//  if( canId_BMS == 0x107)
-//  {
-//      int highOpCellVolt  = (buff_BMS[0]<<8)|buff_BMS[1];
-//      int highOpCellVID   = buff_BMS[2];
-//      int lowOpCellVolt   = (buff_BMS[3]<<8)|buff_BMS[4];
-//      int lowOpCellVID    = buff_BMS[5];
-//      int avgOpCellVolt   = (buff_BMS[6]<<8)|buff_BMS[7];
-//      
-//      Serial.print("HIGH_CELLVOLT,");Serial.print(highOpCellVolt);Serial.print("\n");
-//      Serial.print("LOW_CELLVOLT,");Serial.print(lowOpCellVolt);Serial.print("\n");
-//      Serial.print("HIGH_CELLVID,");Serial.print(highOpCellVID);Serial.print("\n");
-//      Serial.print("LOW_CELLVID,");Serial.print(lowOpCellVID);Serial.print("\n");
-//      Serial.print("AVG_CELLVOLT,");Serial.print(avgOpCellVolt);Serial.print("\n");
-//  }
-
-
-
-//  if (canId_BMS == 0x006) {
-//    int averageTemp = (buff_BMS[0]);
-//
-//    Serial.print("AV_TEMP,");Serial.print(averageTemp);Serial.print("\n");
-//    
-//  }
-
-    
-  if (canId_BMS == 0x036) 
+  
+  else if (canId_BMS == 0x036) 
+  
   {
       int cellID = (buff_BMS[0]);
       int byte1 = buff_BMS[1];
@@ -419,66 +224,190 @@ void loop(){
       int internalResist =  (buff_BMS[3]<<8)|buff_BMS[4];
       int openVolt =  (buff_BMS[5]<<8)|buff_BMS[6];
 
-//      Serial.print("cellID,");Serial.print(cellID);Serial.print("\n");
-//      Serial.print("Inst_Volt,");Serial.print(instVolt);Serial.print("\n");
-//      Serial.print("Inst_Resist,");Serial.print(internalResist);Serial.print("\n");
-//      Serial.print("Open_Volt,");Serial.print(openVolt);Serial.print("\n");
-
       Serial.print("CELL_INSTVTG,");Serial.print(cellID);Serial.print(",");Serial.print(instVolt);Serial.print("\n");
-//      Serial.print("CELL_CONTINUE_BYTE1,");Serial.print(byte1);Serial.print("\n");
-//      Serial.print("CELL_CONTINUE_BYTE2,");Serial.print(byte2);Serial.print("\n");
-      
   }
 
-//  if (canId_BMS == 0x080)
-//  {
-//     
-//      int thermistorID = (buff_BMS[0]);
-//      int temperature = (buff_BMS[1]);
-////      int WHAT_80 = (buff_BMS[3]);
-//      
-//
-//        Serial.print("TEMP,");Serial.print(thermistorID);Serial.print(",");Serial.print(temperature);Serial.print("\n");
-////        Serial.print("WHAT_BYTE_3,");Serial.print(WHAT_80);Serial.print("\n");
-//  }
-
-  if (canId_BMS == 0x081)
+  else if (canId_BMS == 0x081)
+  
   {
-     
       int thermistorID = (buff_BMS[0]);
       int temperature = (buff_BMS[1]);
-     // int WHAT = (buff_BMS[3]);
       
       Serial.print("TEMP,");Serial.print(thermistorID);Serial.print(",");Serial.print(temperature);Serial.print("\n");
-     
-      //Serial.print("ID,");Serial.print(ID);Serial.print("\n");
-      //Serial.print("TEMP,");Serial.print(TEMP);Serial.print("\n");
-      //Serial.print("WHAT,");Serial.print(WHAT);Serial.print("\n");
-    
   }
-
-//  if (canId_BMS == 0x082)
-//  {
-//   
-//    int ID_2 = (buff_BMS[1]);
-//    int TEMP_2 = (buff_BMS[2]);
-//    int WHAT_2 = (buff_BMS[4]);
-//    int WHAT_3 = (buff_BMS[5]);
-//    int WHAT_4 = (buff_BMS[7]);
-//    
-//
-//   
-//    Serial.print("ID_2,");Serial.print(ID_2);Serial.print("\n");
-//    Serial.print("TEMP_2,");Serial.print(TEMP_2);Serial.print("\n");
-//    Serial.print("BYTE_4,");Serial.print(WHAT_2);Serial.print("\n");
-//    Serial.print("BYTE_5,");Serial.print(WHAT_3);Serial.print("\n");
-//    Serial.print("BYTE_7,");Serial.print(WHAT_4);Serial.print("\n");
-//  
-//  }
     
     ////////////////                     Fin BMS  ///////////////////////////////////////////////////
 
   Serial.flush();
+
+    ///////////////////  INICIO KELLYs  //////////////////
+
+    /////// KELLY 1 //////
+
+  if((millis() - lastTime)>1000)
+  {
+
+    Serial.println("in");
+    
+    CAN.sendMsgBuf(0x6B, 0, 1, CCP_A2D_BATCH_READ1);
+    delay(del);                       // send data per 100ms
+    if (flagRecv) { //cheque si recibe datos
+    //  flagRecv = 0; //borrar flag
+      CAN.readMsgBuf(&len, buff_BMS);
+      Serial.print("Brake A/D,");Serial.print(buff_BMS[0]);Serial.print("\n");
+      Serial.print("TPS A/D,");Serial.print(buff_BMS[1]);Serial.print("\n");
+      Serial.print("Operation voltage A/D,");Serial.print(buff_BMS[2]);Serial.print("\n");
+      Serial.print("Vs A/D,");Serial.print(buff_BMS[3]);Serial.print("\n");
+      Serial.print("B+ A/D,");Serial.print(buff_BMS[4]);Serial.print("\n");
+    }
+  
+    CAN.sendMsgBuf(0x6B, 0, 1, CCP_A2D_BATCH_READ2);
+    delay(del);                       // send data per 100ms
+    if (flagRecv) { //chequea si recibe datos
+    //  flagRecv = 0; //borrar flag
+      CAN.readMsgBuf(&len, buff_BMS);
+      Serial.print("Ia A/D,");Serial.print(buff_BMS[0]);Serial.print("\n");
+      Serial.print("Ib A/D,");Serial.print(buff_BMS[1]);Serial.print("\n");
+      Serial.print("Ic A/D,");Serial.print(buff_BMS[2]);Serial.print("\n");
+      Serial.print("Va A/D,");Serial.print(buff_BMS[3]);Serial.print("\n");
+      Serial.print("Vb A/D,");Serial.print(buff_BMS[4]);Serial.print("\n");
+      Serial.print("Vc A/D,");Serial.print(buff_BMS[5]);Serial.print("\n");
+    }
+  
+    CAN.sendMsgBuf(0x6B, 0, 1, CPP_MONITOR1);
+    delay(del);                       // send data per 100ms
+    if (flagRecv) { //chequea si recibe datos
+    //  flagRecv = 0; //borrar flag
+      CAN.readMsgBuf(&len, buff_BMS);
+      Serial.print("PWM,");Serial.print(buff_BMS[0]);Serial.print("\n");
+      Serial.print("Enable motor rotation,");Serial.print(buff_BMS[1]);Serial.print("\n");  // 1 enable 0 disable
+      Serial.print("Motor Temperature,");Serial.print(buff_BMS[2]);Serial.print("\n");      // Celcius
+      Serial.print("Controller's temperature,");Serial.print(buff_BMS[3]);Serial.print("\n");
+      Serial.print("Temp of HIGH side FETMOS heat sink,");Serial.print(buff_BMS[4]);Serial.print("\n");   //Unaccurate below 30C
+      Serial.print("Temo of LOW side FETMOS heat sink,");Serial.print(buff_BMS[5]);Serial.print("\n");
+    }
+    
+    CAN.sendMsgBuf(0x6B, 0, 1, CPP_MONITOR2);
+    delay(del);                       // send data per 100ms
+    if (flagRecv) { //chequea si recibe datos
+      //flagRecv = 0; //borrar flag
+      CAN.readMsgBuf(&len, buff_BMS);
+      Serial.print("MSB of mechanical speed in RPM,");Serial.print(buff_BMS[0]);Serial.print("\n");
+      Serial.print("LSB of mechanical speed in RPM,");Serial.print(buff_BMS[1]);Serial.print("\n");
+      Serial.print("Mechanical speed calculation,");Serial.print((buff_BMS[0]<<8)|buff_BMS[1]);Serial.print("\n");
+      Serial.print("Present current accounts for percent of the rated current of controller,");Serial.print(buff_BMS[2]);Serial.print("\n");
+      Serial.print("MSB of error code,");Serial.print(buff_BMS[3]);Serial.print("\n");
+      Serial.print("LSB of error code,");Serial.print(buff_BMS[4]);Serial.print("\n");
+      Serial.print("Controller error status,");Serial.print((buff_BMS[3]<<8)|buff_BMS[4]);Serial.print("\n");   // If = 0x4008 Error code is 0x43 (Bit 6 of [3]) and 0x14(Bit 3 of [4])                    
+  
+     }
+  
+    CAN.sendMsgBuf(0x6B, 0, 2, COM_SW_ACC);
+    delay(del);                       // send data per 100ms
+    if (flagRecv) { //chequea si recibe datos
+      //flagRecv = 0; //borrar flag
+      CAN.readMsgBuf(&len, buff_BMS);
+      Serial.print("Current throttle switch status,");Serial.print(buff_BMS[0]);Serial.print("\n"); // 1 active 0 inactive
+     }
+     
+    CAN.sendMsgBuf(0x6B, 0, 2, COM_SW_BRK);
+    delay(del);                       // send data per 100ms
+    if (flagRecv) { //chequea si recibe datos
+      //flagRecv = 0; //borrar flag
+      CAN.readMsgBuf(&len, buff_BMS);
+      Serial.print("Current Brake switch status,");Serial.print(buff_BMS[0]);Serial.print("\n");  //1 active 0 inactive
+     }
+  
+    CAN.sendMsgBuf(0x6B, 0, 2, COM_SW_REV);
+    delay(del);                       // send data per 100ms
+    if (flagRecv) { //chequea si recibe datos
+      //flagRecv = 0; //borrar flag
+      CAN.readMsgBuf(&len, buff_BMS);
+      Serial.print("Current Reverse switch status,");Serial.print(buff_BMS[0]);Serial.print("\n");  // 1 active 0 inactive
+     }
+
+
+    ///////// KELLY 2 ///////////////
+
+    CAN.sendMsgBuf(0x6B, 0, 1, CCP_A2D_BATCH_READ1);
+  delay(del);                       // send data per 100ms
+  if (flagRecv) { //cheque si recibe datos
+  //  flagRecv = 0; //borrar flag
+    CAN.readMsgBuf(&len, buff_BMS);
+    Serial.print("Brake A/D,");Serial.print(buff_BMS[0]);Serial.print("\n");
+    Serial.print("TPS A/D,");Serial.print(buff_BMS[1]);Serial.print("\n");
+    Serial.print("Operation voltage A/D,");Serial.print(buff_BMS[2]);Serial.print("\n");
+    Serial.print("Vs A/D,");Serial.print(buff_BMS[3]);Serial.print("\n");
+    Serial.print("B+ A/D,");Serial.print(buff_BMS[4]);Serial.print("\n");
+  }
+
+  CAN.sendMsgBuf(0x6B, 0, 1, CCP_A2D_BATCH_READ2);
+  delay(del);                       // send data per 100ms
+  if (flagRecv) { //chequea si recibe datos
+  //  flagRecv = 0; //borrar flag
+    CAN.readMsgBuf(&len, buff_BMS);
+    Serial.print("Ia A/D,");Serial.print(buff_BMS[0]);Serial.print("\n");
+    Serial.print("Ib A/D,");Serial.print(buff_BMS[1]);Serial.print("\n");
+    Serial.print("Ic A/D,");Serial.print(buff_BMS[2]);Serial.print("\n");
+    Serial.print("Va A/D,");Serial.print(buff_BMS[3]);Serial.print("\n");
+    Serial.print("Vb A/D,");Serial.print(buff_BMS[4]);Serial.print("\n");
+    Serial.print("Vc A/D,");Serial.print(buff_BMS[5]);Serial.print("\n");
+  }
+
+  CAN.sendMsgBuf(0x6B, 0, 1, CPP_MONITOR1);
+  delay(del);                       // send data per 100ms
+  if (flagRecv) { //chequea si recibe datos
+  //  flagRecv = 0; //borrar flag
+    CAN.readMsgBuf(&len, buff_BMS);
+    Serial.print("PWM,");Serial.print(buff_BMS[0]);Serial.print("\n");
+    Serial.print("Enable motor rotation,");Serial.print(buff_BMS[1]);Serial.print("\n");  // 1 enable 0 disable
+    Serial.print("Motor Temperature,");Serial.print(buff_BMS[2]);Serial.print("\n");      // Celcius
+    Serial.print("Controller's temperature,");Serial.print(buff_BMS[3]);Serial.print("\n");
+    Serial.print("Temp of HIGH side FETMOS heat sink,");Serial.print(buff_BMS[4]);Serial.print("\n");   //Unaccurate below 30C
+    Serial.print("Temo of LOW side FETMOS heat sink,");Serial.print(buff_BMS[5]);Serial.print("\n");
+  }
+  
+  CAN.sendMsgBuf(0x6B, 0, 1, CPP_MONITOR2);
+  delay(del);                       // send data per 100ms
+  if (flagRecv) { //chequea si recibe datos
+    //flagRecv = 0; //borrar flag
+    CAN.readMsgBuf(&len, buff_BMS);
+    Serial.print("MSB of mechanical speed in RPM,");Serial.print(buff_BMS[0]);Serial.print("\n");
+    Serial.print("LSB of mechanical speed in RPM,");Serial.print(buff_BMS[1]);Serial.print("\n");
+    Serial.print("Mechanical speed calculation,");Serial.print((buff_BMS[0]<<8)|buff_BMS[1]);Serial.print("\n");
+    Serial.print("Present current accounts for percent of the rated current of controller,");Serial.print(buff_BMS[2]);Serial.print("\n");
+    Serial.print("MSB of error code,");Serial.print(buff_BMS[3]);Serial.print("\n");
+    Serial.print("LSB of error code,");Serial.print(buff_BMS[4]);Serial.print("\n");
+    Serial.print("Controller error status,");Serial.print((buff_BMS[3]<<8)|buff_BMS[4]);Serial.print("\n");   // If = 0x4008 Error code is 0x43 (Bit 6 of [3]) and 0x14(Bit 3 of [4])                    
+   }
+
+  CAN.sendMsgBuf(0x6B, 0, 2, COM_SW_ACC);
+  delay(del);                       // send data per 100ms
+  if (flagRecv) { //chequea si recibe datos
+    //flagRecv = 0; //borrar flag
+    CAN.readMsgBuf(&len, buff_BMS);
+    Serial.print("Current throttle switch status,");Serial.print(buff_BMS[0]);Serial.print("\n"); // 1 active 0 inactive
+   }
+   
+  CAN.sendMsgBuf(0x6B, 0, 2, COM_SW_BRK);
+  delay(del);                       // send data per 100ms
+  if (flagRecv) { //chequea si recibe datos
+    //flagRecv = 0; //borrar flag
+    CAN.readMsgBuf(&len, buff_BMS);
+    Serial.print("Current Brake switch status,");Serial.print(buff_BMS[0]);Serial.print("\n");  //1 active 0 inactive
+   }
+
+  CAN.sendMsgBuf(0x6B, 0, 2, COM_SW_REV);
+  delay(del);                       // send data per 100ms
+  if (flagRecv) { //chequea si recibe datos
+    //flagRecv = 0; //borrar flag
+    CAN.readMsgBuf(&len, buff_BMS);
+    Serial.print("Current Reverse switch status,");Serial.print(buff_BMS[0]);Serial.print("\n");  // 1 active 0 inactive
+   }
+
+   Serial.flush();
+   lastTime = millis();
+  }
     
     ////////////////////////////////////////////// MPPT 2.0 ////////////////////////////////////////////////////////////
 
