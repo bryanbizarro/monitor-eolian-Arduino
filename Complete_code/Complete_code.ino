@@ -29,7 +29,6 @@ unsigned char CPP_MONITOR2[1] = {0x37};
 unsigned char COM_SW_ACC[2] = {0x42, 0};
 unsigned char COM_SW_BRK[2] = {0x43, 0};
 unsigned char COM_SW_REV[2] = {0x44, 0};
-unsigned char CCP_A2D_BATCH_READ1[1] = {0x1B};
 
 //
 
@@ -425,7 +424,7 @@ void loop(){
   if (flagRecv) { //cheque si recibe datos
   //  flagRecv = 0; //borrar flag
     CAN.readMsgBuf(&len, buff_kelly);
-    Serial.print("Brake A/D,");Serial.print(buff_kelly[0]);Serial.print("\n");
+    Serial.print("Brake A/D,");Serial.print(buff_kelly[0]);Serial.print("\n");  //
     Serial.print("TPS A/D,");Serial.print(buff_kelly[1]);Serial.print("\n");
     Serial.print("Operation voltage A/D,");Serial.print(buff_kelly[2]);Serial.print("\n");
     Serial.print("Vs A/D,");Serial.print(buff_kelly[3]);Serial.print("\n");
@@ -437,7 +436,7 @@ void loop(){
   if (flagRecv) { //chequea si recibe datos
   //  flagRecv = 0; //borrar flag
     CAN.readMsgBuf(&len, buff_kelly);
-    Serial.print("Ia A/D,");Serial.print(buff_kelly[0]);Serial.print("\n");
+    Serial.print("Ia A/D,");Serial.print(buff_kelly[0]);Serial.print("\n"); //VOLTAJE Y CORRIENTE EN CADA LA TRIFASE
     Serial.print("Ib A/D,");Serial.print(buff_kelly[1]);Serial.print("\n");
     Serial.print("Ic A/D,");Serial.print(buff_kelly[2]);Serial.print("\n");
     Serial.print("Va A/D,");Serial.print(buff_kelly[3]);Serial.print("\n");
