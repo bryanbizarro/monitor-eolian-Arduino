@@ -25,20 +25,8 @@ unsigned char buff[7];
 
 unsigned char dataToSend[13];
 
-
-
-/* Excel
-const int serialBufferSize = 32;      // buffer size for input
-char  serialBuffer[serialBufferSize]; // buffer for input
-const int serialMaxArgs = 4;          // max CSV message args
-char* serialArgs[serialMaxArgs];      // args pointers
-int   idxM1 = 0;                        // index
-int   idxM2 = 0;
-int   idxBMS  = 0;
-int   outputTiming = 1000;            // packet sending timing in ms      important: this dermines the output timing
-float input1;                         // received value
-float inputArray[6];                  // received values
-*/
+unsigned long canId;
+unsigned int Uin, Iin, Uout;
 
 
 ///////////////////////////////////////////////////////////////////
@@ -94,18 +82,30 @@ void loop(){
 
     // send data:  id = 0x00, standrad frame, data len = 8, stmp: data buf
     CAN.sendMsgBuf(0x711, 0, 0, 0);
-    unsigned long canId1 = CAN.getCanId();
-    if (canId1 == 0x771){
+    delay(del);
+    CAN.readMsgBuf(&len, buff);
+    canId = CAN.getCanId();
+    if (canId == 0x771){
       
-      flagRecv = 0; //borrar flag
-      CAN.readMsgBuf(&len, buff);
-
       dataToSend[2] = 0;
       dataToSend[3] = 1;
       for(int j = 5; j < 12; j++){
         dataToSend[j] = buff[j-5];
       }
       SendMsg();
+
+      Uin  = ((bitRead(buff[0],1)<<1|bitRead(buff[0],0))<<8)|buff[1];
+      Iin  = ((bitRead(buff[2],1)<<1|bitRead(buff[2],0))<<8)|buff[3];
+      Uout  = ((bitRead(buff[4],1)<<1|bitRead(buff[4],0))<<8)|buff[5];
+      
+      Serial.print("MPPT1_BVLR,");Serial.print(bitRead(buff[0],7));Serial.print("\n");
+      Serial.print("MPPT1_OVT,");Serial.print(bitRead(buff[0],6));Serial.print("\n");
+      Serial.print("MPPT1_NOC,");Serial.print(bitRead(buff[0],5));Serial.print("\n");
+      Serial.print("MPPT1_UNDV,");Serial.print(bitRead(buff[0],4));Serial.print("\n");
+      Serial.print("MPPT1_UIN,");Serial.print(Uin);Serial.print("\n");
+      Serial.print("MPPT1_IIN,");Serial.print(Iin);Serial.print("\n");
+      Serial.print("MPPT1_UOUT,");Serial.print(Uout);Serial.print("\n");
+      Serial.print("MPPT1_TAMB,");Serial.print(buff[6]);Serial.print("\n");
       /*
       mySerial.write((byte)255);mySerial.write((byte)255);mySerial.write((byte)0);    // Header
       mySerial.print(1);                                    // ID
@@ -121,14 +121,29 @@ void loop(){
 
     // send data:  id = 0x00, standrad frame, data len = 8, stmp: data buf
     CAN.sendMsgBuf(0x712, 0, 0, 0);
-    unsigned long canId2 = CAN.getCanId();
-    if (canId2 == 0x772){
+    delay(del);
+    CAN.readMsgBuf(&len, buff);
+    canId = CAN.getCanId();
+    if (canId == 0x772){
       dataToSend[2] = 0;
       dataToSend[3] = 2;
       for(int j = 5; j < 12; j++){
         dataToSend[j] = buff[j-5];
       }
       SendMsg();
+
+      Uin  = ((bitRead(buff[0],1)<<1|bitRead(buff[0],0))<<8)|buff[1];
+      Iin  = ((bitRead(buff[2],1)<<1|bitRead(buff[2],0))<<8)|buff[3];
+      Uout  = ((bitRead(buff[4],1)<<1|bitRead(buff[4],0))<<8)|buff[5];
+      
+      Serial.print("MPPT2_BVLR,");Serial.print(bitRead(buff[0],7));Serial.print("\n");
+      Serial.print("MPPT2_OVT,");Serial.print(bitRead(buff[0],6));Serial.print("\n");
+      Serial.print("MPPT2_NOC,");Serial.print(bitRead(buff[0],5));Serial.print("\n");
+      Serial.print("MPPT2_UNDV,");Serial.print(bitRead(buff[0],4));Serial.print("\n");
+      Serial.print("MPPT2_UIN,");Serial.print(Uin);Serial.print("\n");
+      Serial.print("MPPT2_IIN,");Serial.print(Iin);Serial.print("\n");
+      Serial.print("MPPT2_UOUT,");Serial.print(Uout);Serial.print("\n");
+      Serial.print("MPPT2_TAMB,");Serial.print(buff[6]);Serial.print("\n");
 
       /*
       mySerial.write((byte)255);mySerial.write((byte)255);mySerial.write((byte)0);    // Header

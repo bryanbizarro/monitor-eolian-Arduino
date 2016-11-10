@@ -58,8 +58,14 @@ char inData[13];
 int charsRead = 0;
 
 
+// MPPTs vars
+
+unsigned int Uin, Iin, Uout;
+
+
 /*////////////////// delayTime vars //////////////////*/
-long lastTime = 0;
+long lastKellyTime = 0;
+long lastMpptTime = 0;
 
 
 
@@ -270,11 +276,11 @@ void loop(){
       Serial.print("V1_B,");Serial.print(buff[4]);Serial.print("\n");
       Serial.print("V1_C,");Serial.print(buff[5]);Serial.print("\n");
       engineData = 2*10 + engineData%10;
-    } else if(engineData/10 == 2){  // Si el 1er digito de engineData es '2' se procede a leer la temperatura.
-      Serial.print("ENG_TEMP_1,");Serial.print(buff[2]);Serial.print("\n");      // Temperatura motor: Celcius
-      engineData = 3*10 + engineData%10;
-    } else if(engineData/10 == 3){  // Si el 1er digito de engineData es '3' se procede a leer RPM.
+    } else if(engineData/10 == 2){  // Si el 1er digito de engineData es '3' se procede a leer RPM.
       Serial.print("ENG_RPM_1,");Serial.print((buff[0])<<8|buff[1]);Serial.print("\n");
+      engineData = 3*10 + engineData%10;
+    } else {                        // Si el 1er digito de engineData es '2' se procede a leer la temperatura.
+      Serial.print("ENG_TEMP_1,");Serial.print(buff[2]);Serial.print("\n");      // Temperatura motor: Celcius
       engineData = 10 + engineData%10;
     }
   }
@@ -296,34 +302,80 @@ void loop(){
       Serial.print("V2_B,");Serial.print(buff[4]);Serial.print("\n");
       Serial.print("V2_C,");Serial.print(buff[5]);Serial.print("\n");
       engineData = engineData/10*10 + 2;
-    } else if(engineData%10 == 2){  // 2do digito de engineData es 2, lee temperatura.
-      Serial.print("ENG_TEMP_2,");Serial.print(buff[2]);Serial.print("\n");      // Temperatura motor: Celcius
-      engineData = engineData/10*10 + 3;
-    } else if(engineData%10 == 3){  // 2do digito de engineData es 3, lee RPM.
+    } else if(engineData%10 == 2){  // 2do digito de engineData es 3, lee RPM.
       Serial.print("ENG_RPM_2,");Serial.print((buff[0])<<8|buff[1]);Serial.print("\n");
+      engineData = engineData/10*10 + 3;
+    } else {                        // 2do digito de engineData es 2, lee temperatura.
+      Serial.print("ENG_TEMP_2,");Serial.print(buff[2]);Serial.print("\n");      // Temperatura motor: Celcius
       engineData = engineData/10*10 + 1;
     } 
   }
 
 /*////////////////////   FIN KELLYS   ////////////////////*/
 
+/*////////////////////   LECTURA DE DATOS MPPTs   ////////////////////*/
+
+  else if(canId = 0x771)
+  {
+    Uin  = ((bitRead(buff[0],1)<<1|bitRead(buff[0],0))<<8)|buff[1];
+    Iin  = ((bitRead(buff[2],1)<<1|bitRead(buff[2],0))<<8)|buff[3];
+    Uout  = ((bitRead(buff[4],1)<<1|bitRead(buff[4],0))<<8)|buff[5];
+    
+    Serial.print("MPPT1_BVLR,");Serial.print(bitRead(buff[0],7));Serial.print("\n");
+    Serial.print("MPPT1_OVT,");Serial.print(bitRead(buff[0],6));Serial.print("\n");
+    Serial.print("MPPT1_NOC,");Serial.print(bitRead(buff[0],5));Serial.print("\n");
+    Serial.print("MPPT1_UNDV,");Serial.print(bitRead(buff[0],4));Serial.print("\n");
+    Serial.print("MPPT1_UIN,");Serial.print(Uin);Serial.print("\n");
+    Serial.print("MPPT1_IIN,");Serial.print(Iin);Serial.print("\n");
+    Serial.print("MPPT1_UOUT,");Serial.print(Uout);Serial.print("\n");
+    Serial.print("MPPT1_TAMB,");Serial.print(buff[6]);Serial.print("\n");
+    
+  }
+  else if(canId = 0x772)
+  {
+    Uin  = ((bitRead(buff[0],1)<<1|bitRead(buff[0],0))<<8)|buff[1];
+    Iin  = ((bitRead(buff[2],1)<<1|bitRead(buff[2],0))<<8)|buff[3];
+    Uout  = ((bitRead(buff[4],1)<<1|bitRead(buff[4],0))<<8)|buff[5];
+    
+    Serial.print("MPPT2_BVLR,");Serial.print(bitRead(buff[0],7));Serial.print("\n");
+    Serial.print("MPPT2_OVT,");Serial.print(bitRead(buff[0],6));Serial.print("\n");
+    Serial.print("MPPT2_NOC,");Serial.print(bitRead(buff[0],5));Serial.print("\n");
+    Serial.print("MPPT2_UNDV,");Serial.print(bitRead(buff[0],4));Serial.print("\n");
+    Serial.print("MPPT2_UIN,");Serial.print(Uin);Serial.print("\n");
+    Serial.print("MPPT2_IIN,");Serial.print(Iin);Serial.print("\n");
+    Serial.print("MPPT2_UOUT,");Serial.print(Uout);Serial.print("\n");
+    Serial.print("MPPT2_TAMB,");Serial.print(buff[6]);Serial.print("\n");
+    
+  }
+/*////////////////////   FIN MPPTs   ////////////////////*/
+
 /*////////////////////   BLOQUE DE REQUEST KELLYS   ////////////////////*/
 
-  if((millis() - lastTime) > 128){
+  if((millis() - lastKellyTime) > 128){
     if(engineData == 11){
         CAN.sendMsgBuf(0xC7, 0, 1, CCP_A2D_BATCH_READ2);
         CAN.sendMsgBuf(0x6B, 0, 1, CCP_A2D_BATCH_READ2);
     } else if (engineData == 22){
-        CAN.sendMsgBuf(0xC7, 0, 1, CPP_MONITOR1);
-        CAN.sendMsgBuf(0x6B, 0, 1, CPP_MONITOR1);
-    } else {
         CAN.sendMsgBuf(0xC7, 0, 1, CPP_MONITOR2);
         CAN.sendMsgBuf(0x6B, 0, 1, CPP_MONITOR2);
+    } else {
+        CAN.sendMsgBuf(0xC7, 0, 1, CPP_MONITOR1);
+        CAN.sendMsgBuf(0x6B, 0, 1, CPP_MONITOR1);
     }
-    lastTime = millis();
+    lastKellyTime = millis();
   }
 
 /*////////////////////   FIN REQUEST KELLYS   ////////////////////*/
+
+/*////////////////////   BLOQUE DE REQUEST MPPTs   ////////////////////*/
+
+  if((millis() - lastMpptTime) > 512){
+    CAN.sendMsgBuf(0x711, 0, 0, 0);
+    CAN.sendMsgBuf(0x712, 0, 0, 0);
+    lastMpptTime = millis();
+  }
+
+/*////////////////////   FIN REQUEST MPPTs   ////////////////////*/
     
   Serial.flush();
 
