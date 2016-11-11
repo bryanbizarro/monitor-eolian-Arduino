@@ -44,7 +44,7 @@ unsigned char COM_SW_REV[2] = {0x44, 0};
 int engineData = 11;
 ////// END KELLY ///////
 
-long lastTime = 0;
+long lastKellyTime = 0;
 
 MCP_CAN CAN(SPI_CS_PIN);       
 
@@ -90,7 +90,9 @@ void loop() {
 
   //// FIN GAP ////
 
-  //// LECTURA DATOS KELLYs ////    
+  //// LECTURA DATOS KELLYs ////   
+
+  //Serial.print("                               1st engineData = ");Serial.println(engineData);
     
   CAN.readMsgBuf(&len, buff);
   canId = CAN.getCanId();
@@ -104,12 +106,15 @@ void loop() {
       Serial.print("V1_B,");Serial.print(buff[4]);Serial.print("\n");
       Serial.print("V1_C,");Serial.print(buff[5]);Serial.print("\n");
       engineData = 2*10 + engineData%10;
+      Serial.print("                                   engineData = ");Serial.println(engineData);
     } else if(engineData/10 == 2){
       Serial.print("ENG_TEMP_1,");Serial.print(buff[2]);Serial.print("\n");      // Temperatura motor: Celcius
       engineData = 3*10 + engineData%10;
+      Serial.print("                                   engineData = ");Serial.println(engineData);
     } else if(engineData/10 == 3){
       Serial.print("ENG_RPM_1,");Serial.print((buff[0])<<8|buff[1]);Serial.print("\n");
       engineData = 10 + engineData%10;
+      Serial.print("                                   engineData = ");Serial.println(engineData);
     } 
   } else if(canId == 0x12C){
     if(engineData%10 == 1){
@@ -120,12 +125,15 @@ void loop() {
       Serial.print("V2_B,");Serial.print(buff[4]);Serial.print("\n");
       Serial.print("V2_C,");Serial.print(buff[5]);Serial.print("\n");
       engineData = engineData/10*10 + 2;
+      Serial.print("                                   engineData = ");Serial.println(engineData);
     } else if(engineData%10 == 2){
       Serial.print("ENG_TEMP_2,");Serial.print(buff[2]);Serial.print("\n");      // Temperatura motor: Celcius
       engineData = engineData/10*10 + 3;
+      Serial.print("                                   engineData = ");Serial.println(engineData);
     } else if(engineData%10 == 3){
       Serial.print("ENG_RPM_2,");Serial.print((buff[0])<<8|buff[1]);Serial.print("\n");
       engineData = engineData/10*10 + 1;
+      Serial.print("                                   engineData = ");Serial.println(engineData);
     } 
   }
 
@@ -133,21 +141,25 @@ void loop() {
 
   //// INICIO REQUEST DATOS KELLYs ////
 
-  if((millis() - lastTime) > 256){
-    if(engineData == 11){
-        CAN.sendMsgBuf(0xC7, 0, 1, CCP_A2D_BATCH_READ2);
-        CAN.sendMsgBuf(0x6B, 0, 1, CCP_A2D_BATCH_READ2);
-        lastTime = millis();
-    } else if (engineData == 22){
-        CAN.sendMsgBuf(0xC7, 0, 1, CPP_MONITOR1);
-        CAN.sendMsgBuf(0x6B, 0, 1, CPP_MONITOR1);
-        lastTime = millis();
-    } else if (engineData == 33){
-        CAN.sendMsgBuf(0xC7, 0, 1, CPP_MONITOR2);
-        CAN.sendMsgBuf(0x6B, 0, 1, CPP_MONITOR2);
-        lastTime = millis();
+  if((millis() - lastKellyTime) > 256){
+    if(engineData/10 == 1){
+      CAN.sendMsgBuf(0xC7, 0, 1, CCP_A2D_BATCH_READ2);
+    } else if (engineData/10 == 2){
+      CAN.sendMsgBuf(0xC7, 0, 1, CPP_MONITOR2);
+    } else if (engineData/10 == 3){
+      CAN.sendMsgBuf(0xC7, 0, 1, CPP_MONITOR1);
+        
     }
-    if(millis() - lastTime > 1024){
+    
+    if(engineData%10 == 1){
+        CAN.sendMsgBuf(0x6B, 0, 1, CCP_A2D_BATCH_READ2);
+    } else if (engineData%10 == 2){
+      CAN.sendMsgBuf(0x6B, 0, 1, CPP_MONITOR2);
+    } else if (engineData%10 == 3){
+      CAN.sendMsgBuf(0x6B, 0, 1, CPP_MONITOR1);
+    }
+    lastKellyTime = millis();
+    if(millis() - lastKellyTime > 4096){
       engineData = 11;
     }
       

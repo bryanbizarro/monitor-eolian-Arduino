@@ -1,3 +1,10 @@
+/*  EOLIAN FENIX - 2016 - UNIVERSIDAD DE CHILE
+ *  PROGRAMA MONITOR MPPT.
+ *  PERMITE LEER DATOS MPPT EN CASOS DE:
+ *  - FALLA PROGRAMA PRINCIPAL.
+ *  - SE REQUIERE SOLO DATOS DE MPPTs.
+ */
+ 
 #include <mcp_can.h>
 #include <SPI.h>
 #include <SoftwareSerial.h>
@@ -106,15 +113,6 @@ void loop(){
       Serial.print("MPPT1_IIN,");Serial.print(Iin);Serial.print("\n");
       Serial.print("MPPT1_UOUT,");Serial.print(Uout);Serial.print("\n");
       Serial.print("MPPT1_TAMB,");Serial.print(buff[6]);Serial.print("\n");
-      /*
-      mySerial.write((byte)255);mySerial.write((byte)255);mySerial.write((byte)0);    // Header
-      mySerial.print(1);                                    // ID
-      mySerial.write((byte)255);                              //
-      for(char b : buff){
-        mySerial.write((byte)b);                            // Send Data
-      }
-      mySerial.write((byte)255);                              // END
-    */
     }
 
     ////////////////////////////////////////////// MPPT2 2.0 ////////////////////////////////////////////////////////////
@@ -144,17 +142,6 @@ void loop(){
       Serial.print("MPPT2_IIN,");Serial.print(Iin);Serial.print("\n");
       Serial.print("MPPT2_UOUT,");Serial.print(Uout);Serial.print("\n");
       Serial.print("MPPT2_TAMB,");Serial.print(buff[6]);Serial.print("\n");
-
-      /*
-      mySerial.write((byte)255);mySerial.write((byte)255);mySerial.write((byte)0);    // Header
-      mySerial.print(2);                                    // ID
-      mySerial.write((byte)255);                            //
-      for(char b : buff){
-        mySerial.write((byte)b);                            // Send Data
-      }
-      mySerial.write((byte)255);                              // END
-
-      */
     }
 
     /////// Fin Loop ///////
