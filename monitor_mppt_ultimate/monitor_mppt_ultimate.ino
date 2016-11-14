@@ -10,7 +10,7 @@
  *  ╔  ╗
  *  ║00║ || 255 - FIJO COMO PROTOCOLO ||
  *  ╠  ╣
- *  ║01║ 255 - FIJO COMO PROTOCOLO
+ *  ║01║ || 255 - FIJO COMO PROTOCOLO ||
  *  ╠  ╣
  *  ║02║ Reservados para ID de MPPT. Valores:0
  *  ╠  ╣
@@ -77,25 +77,28 @@ void setup()
 {
   mySerial.begin(57600);
   Serial.begin(57600);   // Iniciar Serial para debug
+
+  //Protocolo
+  
   dataToSend[0]   = 255; //Header
   dataToSend[1]   = 255; //Header
   dataToSend[4]   = 255; //Middle
-  dataToSend[13]  = 255; //END
+  dataToSend[13]  = 255; //End
     
 START_INIT:
 
-  if (CAN_OK == CAN.begin(CAN_125KBPS))                
+  if (CAN_OK == CAN.begin(CAN_125KBPS)) //Velocidad de los MPPT
   {
     Serial.println("CAN BUS Shield esta ready papi!");
-    dataToSend[2] = 1;
+    dataToSend[2] = 1; //Reconocimiento del CAN
   }
   else
   {
     Serial.println("CAN BUS Shield init fail");
     Serial.println("Init CAN BUS Shield again");
-    dataToSend[2] = 2;
+    dataToSend[2] = 2; // No reconocimiento del CAN
     delay(100);
-    goto START_INIT;
+    goto START_INIT; // Reinicio de conexion
   }
   attachInterrupt(0, MCP2515_ISR, FALLING); // start interrupt
   // rx buffer clearing
@@ -103,7 +106,6 @@ START_INIT:
     byte c = Serial.read();
   }
 }
-
 
 void MCP2515_ISR()
 {
@@ -126,14 +128,16 @@ void loop(){
     CAN.readMsgBuf(&len, buff);
     canId = CAN.getCanId();
     if (canId == 0x771){
-      
+
+      //Send MPPT ID
       dataToSend[2] = 0;
       dataToSend[3] = 1;
+      //Bypass
       for(int j = 5; j < 13; j++){
         dataToSend[j] = buff[j-5];
       }
       SendMsg();
-
+/*
       Uin  = ((bitRead(buff[0],1)<<1|bitRead(buff[0],0))<<8)|buff[1];
       Iin  = ((bitRead(buff[2],1)<<1|bitRead(buff[2],0))<<8)|buff[3];
       Uout  = ((bitRead(buff[4],1)<<1|bitRead(buff[4],0))<<8)|buff[5];
@@ -146,6 +150,7 @@ void loop(){
       Serial.print("MPPT1_IIN,");Serial.print(Iin);Serial.print("\n");
       Serial.print("MPPT1_UOUT,");Serial.print(Uout);Serial.print("\n");
       Serial.print("MPPT1_TAMB,");Serial.print(buff[6]);Serial.print("\n");
+*/
     }
 
     ////////////////////////////////////////////// MPPT2 2.0 ////////////////////////////////////////////////////////////
@@ -156,13 +161,17 @@ void loop(){
     CAN.readMsgBuf(&len, buff);
     canId = CAN.getCanId();
     if (canId == 0x772){
+      
+      //Send MPPT ID
       dataToSend[2] = 0;
       dataToSend[3] = 2;
+      
+      //Bypass
       for(int j = 5; j < 13; j++){
         dataToSend[j] = buff[j-5];
       }
       SendMsg();
-
+/*
       Uin  = ((bitRead(buff[0],1)<<1|bitRead(buff[0],0))<<8)|buff[1];
       Iin  = ((bitRead(buff[2],1)<<1|bitRead(buff[2],0))<<8)|buff[3];
       Uout  = ((bitRead(buff[4],1)<<1|bitRead(buff[4],0))<<8)|buff[5];
@@ -175,9 +184,9 @@ void loop(){
       Serial.print("MPPT2_IIN,");Serial.print(Iin);Serial.print("\n");
       Serial.print("MPPT2_UOUT,");Serial.print(Uout);Serial.print("\n");
       Serial.print("MPPT2_TAMB,");Serial.print(buff[6]);Serial.print("\n");
+*/
     }
-
-    /////// Fin Loop ///////
+    
 } 
 
 
