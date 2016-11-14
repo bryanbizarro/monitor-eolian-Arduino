@@ -5,8 +5,8 @@
  *  - SE REQUIERE SOLO DATOS DE MPPTs.
  */
 
-/*  PROTOCOLO DE ENVÍO: 12 bits
- *   Bits
+/*  PROTOCOLO DE ENVÍO: 12 bytes
+ *  Bytes
  *  ╔  ╗
  *  ║00║ || 255 - FIJO COMO PROTOCOLO ||
  *  ╠  ╣
