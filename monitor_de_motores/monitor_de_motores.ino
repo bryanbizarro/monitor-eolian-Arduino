@@ -4,6 +4,39 @@
  *  - CASO DE FALLA DEL PROGRAMA PRINCIPAL
  *  - SE DESEAN SOLO LECTURAS DE LOS KELLYs
  */
+
+ /*  PROTOCOLO DE ENVÍO: 12 bytes
+ *  Bytes
+ *  ╔  ╗
+ *  ║00║ || 255 - FIJO COMO PROTOCOLO ||
+ *  ╠  ╣
+ *  ║01║ || 255 - FIJO COMO PROTOCOLO ||
+ *  ╠  ╣
+ *  ║02║ Reservados para ID de MOTORES. Valores:1     ,0 para MPPT, 1 para MOTORES, 2 para BMS
+ *  ╠  ╣
+ *  ║03║ Reservados para ID de MOTORES. Valores:0,1
+ *  ╠  ╣
+ *  ║04║ || 255 - FIJO COMO PROTOCOLO ||
+ *  ╠  ╣
+ *  ║05║ CAN BUFF[0]
+ *  ╠  ╣
+ *  ║06║ CAN BUFF[1]
+ *  ╠  ╣
+ *  ║07║ CAN BUFF[2]
+ *  ╠  ╣
+ *  ║08║ CAN BUFF[3]
+ *  ╠  ╣
+ *  ║09║ CAN BUFF[4]
+ *  ╠  ╣
+ *  ║10║ CAN BUFF[5]
+ *  ╠  ╣
+ *  ║11║ CAN BUFF[6]
+ *  ╠  ╣
+ *  ║12║ CAN BUFF[7]
+ *  ╠  ╣
+ *  ║13║ || 255 - FIJO COMO PROTOCOLO ||
+ *  ╚  ╝
+ */
  
 #include <mcp_can.h>
 #include <SPI.h>
@@ -16,7 +49,7 @@
 /* ////////// VARIABLES CAN SHIELD ////////// */
 
 // Define PIN usado para comunicacion CAN SHIELD - ARDUINO.
-// Por defecto, despues de v1.1, es D9.
+// Por defecto, versiones 0.9b y v1.0 es D10, despues de v1.1 es D9.
 const int SPI_CS_PIN = 9;
 
 unsigned char len = 0;
@@ -56,12 +89,12 @@ START_INIT:
 
   if (CAN_OK == CAN.begin(CAN_1000KBPS))                    // Inicia CAN BUS con baudrate de 1000 kbps
   {
-    Serial.println("CAN BUS Shield esta ready papi!!!!!!!!!!!!!!!!!!!!!");
+    Serial.println("CAN BUS Shield MOTORRES iniciado!");
   }
   else
   {
-    Serial.println("CAN BUS Shield init fail");
-    Serial.println("Init CAN BUS Shield again");
+    Serial.println("Falla de inicio CAN BUS Shield MOTORES");
+    Serial.println("Reiniciando CAN BUS Shield MOTORES");
     delay(100);
     goto START_INIT;
   }

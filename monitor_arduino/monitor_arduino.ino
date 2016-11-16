@@ -5,6 +5,38 @@
  *  BMS - KELLYs - MPPT
  */
 
+/*  PROTOCOLO DE ENVÍO: 12 bytes
+ *  Bytes
+ *  ╔  ╗
+ *  ║00║ || 255 - FIJO COMO PROTOCOLO ||
+ *  ╠  ╣
+ *  ║01║ || 255 - FIJO COMO PROTOCOLO ||
+ *  ╠  ╣
+ *  ║02║ Reservados para ID de BMS. Valores:2     ,0 para MPPT, 1 para MOTORES, 2 para BMS
+ *  ╠  ╣
+ *  ║03║ Reservados para ID de BMS. Valores:0
+ *  ╠  ╣
+ *  ║04║ || 255 - FIJO COMO PROTOCOLO ||
+ *  ╠  ╣
+ *  ║05║ CAN BUFF[0]
+ *  ╠  ╣
+ *  ║06║ CAN BUFF[1]
+ *  ╠  ╣
+ *  ║07║ CAN BUFF[2]
+ *  ╠  ╣
+ *  ║08║ CAN BUFF[3]
+ *  ╠  ╣
+ *  ║09║ CAN BUFF[4]
+ *  ╠  ╣
+ *  ║10║ CAN BUFF[5]
+ *  ╠  ╣
+ *  ║11║ CAN BUFF[6]
+ *  ╠  ╣
+ *  ║12║ CAN BUFF[7]
+ *  ╠  ╣
+ *  ║13║ || 255 - FIJO COMO PROTOCOLO ||
+ *  ╚  ╝
+ */
 #include <mcp_can.h>
 #include <SPI.h>
 #include <SoftwareSerial.h>
@@ -83,12 +115,12 @@ START_INIT:
 
   if (CAN_OK == CAN.begin(CAN_1000KBPS))                  // init can bus : baudrate = 500k
   {
-    Serial.println("CAN BUS Shield esta ready papi!!!!");
+    Serial.println("CAN BUS Shield BMS iniciado!");
   }
   else
   {
-    Serial.println("CAN BUS Shield init fail");
-    Serial.println("Init CAN BUS Shield again");
+    Serial.println("Falla de inicio CAN BUS Shield BMS");
+    Serial.println("Reiniciando CAN BUS Shield BMS");
     delay(100);
     goto START_INIT;
   }
@@ -125,12 +157,12 @@ bool read2Serial(){
       //Serial.print(inData[4]);Serial.print(inData[5]);Serial.print(inData[6]);Serial.print(inData[7]);
       //Serial.print(inData[8]);Serial.print(inData[9]);Serial.print(inData[10]);Serial.print(inData[11]);
       //Serial.println(inData[12]);
-      if((inData[0] == 255) && (inData[1] == 255) && (inData[4] == 255) && (inData[12] == 255)){
+      if((inData[0] == 255) && (inData[1] == 255) && (inData[4] == 255) && (inData[13] == 255)){
         //Serial.println("data ok");
         if(inData[2] == 0){  //REVISAR que igualdad se cumpla!!!
           MPPTId = inData[3];
           index = 0;
-          for(int j = 5;j<12;j++){
+          for(int j = 5;j<13;j++){
             buff[index] = inData[j];
           }
           int MPPT_TEMP  = buff[6];
