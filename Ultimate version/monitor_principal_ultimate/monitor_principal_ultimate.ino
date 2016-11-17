@@ -100,13 +100,26 @@ void loop() {
       //Serial.println(inData[12]);
       if((inData[0] == 255) && (inData[1] == 255) && (inData[4] == 255) && (inData[13] == 255)){
         //Serial.println("data ok");
+
+
+        // MPPT //
         if(inData[2] == 0){  //REVISAR que igualdad se cumpla!!!
           MPPTId = inData[3]; //0 o 1
           index1 = 0;
+          
           for(int j = 5;j<13;j++){    // Sin byte [13] = 255
             buff[index1] = inData[j];
             index1++
           }
+
+          if (MPPTId == 30){
+            Serial.print("CAN KELLY RECONOCIDO");Serial.print("\n");
+          }
+          else if (MPPTId == 31){
+            Serial.print("CAN KELLY NO RECONOCIDO");Serial.print("\n");
+          }
+          else if (MPPTId == 0){
+            
           int MPPT_TEMP  = buff[6];
           int Uin  = ((bitRead(buff[0],1)<<1|bitRead(buff[0],0))<<8)|buff[1];
           int Iin  = ((bitRead(buff[2],1)<<1|bitRead(buff[2],0))<<8)|buff[3];
@@ -116,29 +129,56 @@ void loop() {
           int NOC  = (bitRead(buff[0],5));
           int UNDV = (bitRead(buff[0],4));
   
-          Serial.print("MPPT");Serial.print(MPPTId);Serial.print("_BVLR,");Serial.print(BVLR);Serial.print("\n");
+          Serial.print("MPPT_IZ");Serial.print("_BVLR,");Serial.print(BVLR);Serial.print("\n");
           delay(timi);
-          Serial.print("MPPT");Serial.print(MPPTId);Serial.print("_OVT,");Serial.print(OVT);Serial.print("\n");
+          Serial.print("MPPT_IZ");Serial.print("_OVT,");Serial.print(OVT);Serial.print("\n");
           delay(timi);
-          Serial.print("MPPT");Serial.print(MPPTId);Serial.print("_NOC,");Serial.print(NOC);Serial.print("\n");
+          Serial.print("MPPT_IZ");Serial.print("_NOC,");Serial.print(NOC);Serial.print("\n");
           delay(timi);
-          Serial.print("MPPT");Serial.print(MPPTId);Serial.print("_UNDV,");Serial.print(UNDV);Serial.print("\n");
+          Serial.print("MPPT_IZ");Serial.print("_UNDV,");Serial.print(UNDV);Serial.print("\n");
           delay(timi);
-          Serial.print("MPPT");Serial.print(MPPTId);Serial.print("_TEMP,");Serial.print(MPPT_TEMP);Serial.print("\n");
+          Serial.print("MPPT_IZ");Serial.print("_TEMP,");Serial.print(MPPT_TEMP);Serial.print("\n");
           delay(timi);
-          Serial.print("MPPT");Serial.print(MPPTId);Serial.print("_UIN,");Serial.print(Uin);Serial.print("\n");
+          Serial.print("MPPT_IZ");Serial.print("_UIN,");Serial.print(Uin);Serial.print("\n");
           delay(timi);
-          Serial.print("MPPT");Serial.print(MPPTId);Serial.print("_IIN,");Serial.print(Iin);Serial.print("\n");
+          Serial.print("MPPT_IZ");;Serial.print("_IIN,");Serial.print(Iin);Serial.print("\n");
           delay(timi);
-          Serial.print("MPPT");Serial.print(MPPTId);Serial.print("_UOUT");Serial.print(Uout);Serial.print("\n");
+          Serial.print("MPPT_IZ");Serial.print("_UOUT");Serial.print(Uout);Serial.print("\n");
           delay(timi);
-        } else if ((inData[2] == 0)&&(inData[3] == 30)){
-          Serial.print("CAN MPPT RECONOCIDO");
-        } else if ((inData[2] == 0)&&(inData[3] == 31)){
-          Serial.print("CAN MPPT NO RECONOCIDO");
-
+          }
+          else if (MPPTId == 1){
+            
+          int MPPT_TEMP  = buff[6];
+          int Uin  = ((bitRead(buff[0],1)<<1|bitRead(buff[0],0))<<8)|buff[1];
+          int Iin  = ((bitRead(buff[2],1)<<1|bitRead(buff[2],0))<<8)|buff[3];
+          int Uout = ((bitRead(buff[4],1)<<1|bitRead(buff[4],0))<<8)|buff[5];
+          int BVLR = (bitRead(buff[0],7));
+          int OVT  = (bitRead(buff[0],6));
+          int NOC  = (bitRead(buff[0],5));
+          int UNDV = (bitRead(buff[0],4));
+  
+          Serial.print("MPPT_DER");Serial.print("_BVLR,");Serial.print(BVLR);Serial.print("\n");
+          delay(timi);
+          Serial.print("MPPT_DER");Serial.print("_OVT,");Serial.print(OVT);Serial.print("\n");
+          delay(timi);
+          Serial.print("MPPT_DER");Serial.print("_NOC,");Serial.print(NOC);Serial.print("\n");
+          delay(timi);
+          Serial.print("MPPT_DER");Serial.print("_UNDV,");Serial.print(UNDV);Serial.print("\n");
+          delay(timi);
+          Serial.print("MPPT_DER");Serial.print("_TEMP,");Serial.print(MPPT_TEMP);Serial.print("\n");
+          delay(timi);
+          Serial.print("MPPT_DER");Serial.print("_UIN,");Serial.print(Uin);Serial.print("\n");
+          delay(timi);
+          Serial.print("MPPT_DER");;Serial.print("_IIN,");Serial.print(Iin);Serial.print("\n");
+          delay(timi);
+          Serial.print("MPPT_DER");Serial.print("_UOUT");Serial.print(Uout);Serial.print("\n");
+          delay(timi);
+          }
           
-        } else if (inData[2] == 1){
+        // Fin MPPT //
+        
+        // Kelly //
+        } else if (inData[2] == 1){   
 
           KellyId = inData[3]; // Primer Digito= Kelly iz/der, Segundo Digito = Cual request
           index1 = 0;
@@ -146,7 +186,13 @@ void loop() {
             buff[index1] = inData[j];
             index1++
           }
-          if (KellyId== 00){          //CCP_A2D_BATCH_READ1 IZQUIERDO
+          if (KellyId== 30){
+            Serial.print("CAN KELLY RECONOCIDO");Serial.print("\n");
+          }
+          else if (KellyId== 31){
+            Serial.print("CAN KELLY NO RECONOCIDO");Serial.print("\n");
+          }
+          else if (KellyId== 00){          //CCP_A2D_BATCH_READ1 IZQUIERDO
             int Brake = buff[0]
             int TPS = buff[1]
             int OperationVolt = buff[2]
@@ -183,51 +229,154 @@ void loop() {
             delay(timi);
           }
           else if (KellyId== 01){          //CCP_A2D_BATCH_READ2 IZQUIERDO
-            
+            int Ia = buff[0]
+            int Ib = buff[1]
+            int Ic = buff[2]
+            int Va = buff[3]
+            int Vb = buff[4]
+            int Vc = buff[5]
+
+            Serial.print("Kelly_IZ");Serial.print("Ia");Serial.print(Ia);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_IZ");Serial.print("Ib");Serial.print(Ib);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_IZ");Serial.print("Ic");Serial.print(Ic);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_IZ");Serial.print("Va");Serial.print(Va);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_IZ");Serial.print("Vb");Serial.print(Vb);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_IZ");Serial.print("Vc");Serial.print(Vc);Serial.print("\n");
+            delay(timi);
           }
           else if (KellyId== 11){          //CCP_A2D_BATCH_READ2 DERECHO
-            
+            int Ia = buff[0]
+            int Ib = buff[1]
+            int Ic = buff[2]
+            int Va = buff[3]
+            int Vb = buff[4]
+            int Vc = buff[5]
+
+            Serial.print("Kelly_DER");Serial.print("Ia");Serial.print(Ia);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_DER");Serial.print("Ib");Serial.print(Ib);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_DER");Serial.print("Ic");Serial.print(Ic);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_DER");Serial.print("Va");Serial.print(Va);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_DER");Serial.print("Vb");Serial.print(Vb);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_DER");Serial.print("Vc");Serial.print(Vc);Serial.print("\n");
+            delay(timi);
           }
           else if (KellyId== 02){          //CCP_MONITOR1 IZQUIERDO
-            
+            int PWM = buff[0]
+            int EnableMotorRotation = buff[1]
+            int MotorTemp = buff[2]
+            int ControllerTemp = buff[3]
+            int HighSideFETMOSTemp = buff[4]
+            int LowSideFETMOSTemp = buff[5]
+
+            Serial.print("Kelly_IZ");Serial.print("PWM");Serial.print(PWM);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_IZ");Serial.print("EnableMotorRotation");Serial.print(EnableMotorRotation);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_IZ");Serial.print("MotorTemp");Serial.print(MotorTemp);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_IZ");Serial.print("ControllerTemp");Serial.print(ControllerTemp);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_IZ");Serial.print("HighSideFETMOSTemp");Serial.print(HighSideFETMOSTemp);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_IZ");Serial.print("LowSideFETMOSTemp");Serial.print(LowSideFETMOSTemp);Serial.print("\n");
+            delay(timi);
           }
           else if (KellyId== 12){          //CCP_MONITOR1 DERECHO
-            
+            int PWM = buff[0]
+            int EnableMotorRotation = buff[1]
+            int MotorTemp = buff[2]
+            int ControllerTemp = buff[3]
+            int HighSideFETMOSTemp = buff[4]
+            int LowSideFETMOSTemp = buff[5]
+
+            Serial.print("Kelly_DER");Serial.print("PWM");Serial.print(PWM);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_DER");Serial.print("EnableMotorRotation");Serial.print(EnableMotorRotation);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_DER");Serial.print("MotorTemp");Serial.print(MotorTemp);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_DER");Serial.print("ControllerTemp");Serial.print(ControllerTemp);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_DER");Serial.print("HighSideFETMOSTemp");Serial.print(HighSideFETMOSTemp);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_DER");Serial.print("LowSideFETMOSTemp");Serial.print(LowSideFETMOSTemp);Serial.print("\n");
+            delay(timi);
           }
           else if (KellyId== 03){          //CCP_MONITOR2 IZQUIERDO
-            
+            int RPM = (buff[0])<<8|buff[1]
+            int SomeValue = buff[2]
+            int MSB_ERROR_CODE = buff[3]
+            int LSB_ERROR_CODE
+
+            Serial.print("Kelly_IZ");Serial.print("RPM");Serial.print(RPM);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_IZ");Serial.print("SomeValue");Serial.print(SomeValue);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_IZ");Serial.print("MSB_ERROR_CODE");Serial.print(MSB_ERROR_CODE);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_IZ");Serial.print("LSB_ERROR_CODE");Serial.print(LSB_ERROR_CODE);Serial.print("\n");
+            delay(timi);
           }
           else if (KellyId== 13){          //CCP_MONITOR2 DERECHO
-            
+            int RPM = (buff[0])<<8|buff[1]
+            int SomeValue = buff[2]
+            int MSB_ERROR_CODE = buff[3]
+            int LSB_ERROR_CODE
+
+            Serial.print("Kelly_DER");Serial.print("RPM");Serial.print(RPM);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_DER");Serial.print("SomeValue");Serial.print(SomeValue);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_DER");Serial.print("MSB_ERROR_CODE");Serial.print(MSB_ERROR_CODE);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_DER");Serial.print("LSB_ERROR_CODE");Serial.print(LSB_ERROR_CODE);Serial.print("\n");
+            delay(timi);
           }
           else if (KellyId== 04){          //CCP_COM_SW_ACC IZQUIERDO
-            
+            int CurrentThrottleSwitchStatus = buff[0]
+            Serial.print("Kelly_IZ");Serial.print("CurrentThrottleSwitchStatus");Serial.print(CurrentThrottleSwitchStatus);Serial.print("\n");
+            delay(timi);
           }
           else if (KellyId== 14){          //CCP_COM_SW_ACC DERECHO
-            
+            int CurrentThrottleSwitchStatus = buff[0]
+            Serial.print("Kelly_DER");Serial.print("CurrentThrottleSwitchStatus");Serial.print(CurrentThrottleSwitchStatus);Serial.print("\n");
+            delay(timi);
           }
           else if (KellyId== 05){          //COM_SW_BRK IZQUIERDO
-            
+            int CurrentBrakeSwitchStatus = buff[0]
+            Serial.print("Kelly_IZ");Serial.print("CurrentBrakeSwitchStatus");Serial.print(CurrentBrakeSwitchStatus);Serial.print("\n");
+            delay(timi);
           }
           else if (KellyId== 15){          //COM_SW_BRK DERECHO
-            
+            int CurrentThrottleSwitchStatus = buff[0]
+            Serial.print("Kelly_DER");Serial.print("CurrentBrakeSwitchStatus");Serial.print(CurrentBrakeSwitchStatus);Serial.print("\n");
+            delay(timi);
           }
           else if (KellyId== 06){          //COM_SW_REV IZQUIERDO
-            
+            int CurrentReverseSwitchStatus = buff[0]
+            Serial.print("Kelly_IZ");Serial.print("CurrentReverseSwitchStatus");Serial.print(CurrentReverseSwitchStatus);Serial.print("\n");
+            delay(timi);
           }
           else if (KellyId== 16){          //COM_SW_REV DERECHO
+            int CurrentReverseSwitchStatus = buff[0]
+            Serial.print("Kelly_DER");Serial.print("CurrentReverseSwitchStatus");Serial.print(CurrentReverseSwitchStatus);Serial.print("\n");
+            delay(timi);
             
-          }
-
-
+          // Fin Kelly //
           
-        } else if ((inData[2] == 1)&&(inData[3] == 30)){
-
-        } else if ((inData[2] == 1)&&(inData[3] == 31)){
-          
-        } else {
+          } else {
           Serial.print("BIT_ERROR_READERROR");
-        }
+          }
       } else {
         for(int j = 0; j<13;j++){
           inData[j] = inData[j+1];
