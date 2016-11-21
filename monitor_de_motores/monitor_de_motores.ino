@@ -124,6 +124,13 @@ void loop() {
 
   //// FIN GAP ////
 
+  if(millis() - lastKelly1Time > 1024){ // Reinicia engineData para la decena en caso de que no se reciba información pasado un segundo.
+    engineData = 2*10 + engineData%10;
+  }
+  if(millis() - lastKelly2Time > 1024){
+    engineData = engineData/10*10 + 1;  // Idem para la unidad.
+  }
+  
   if((millis() - lastKelly1Time) > 56){
     if(engineData/10 == 1){
       CAN.sendMsgBuf(0xC7, 0, 1, CCP_A2D_BATCH_READ2);
