@@ -42,6 +42,9 @@
 #include <SPI.h>
 #include <SoftwareSerial.h>
 
+#define recvId1 0x95
+#define sendId1 0x96
+
 // Pines de Serial Virtual, librería SoftwareSerial
 int rx = 10;
 int tx = 11;
@@ -62,7 +65,7 @@ unsigned char COM_SW_REV[2] = {0x44, 0};        // [0]Current Reverse switch sta
 
 
 // Delay de eco Request/Receive de CAN | Delay entre requests
-int del = 1;
+int del = 5;
 int entremensajes = 10;
 
 /// Buff RX inicial
@@ -70,7 +73,7 @@ unsigned char flagRecv = 0;
 unsigned char len = 0;
 
 //Buff CAN BMS y de entrada RedSerial
-unsigned char buff[7];
+unsigned char buff[8];
 unsigned char dataToSend[13];
 
 //CanID
@@ -132,7 +135,7 @@ void loop(){
 
       // send data:  id = 0x00, standrad frame, data len = 8, stmp: data buf
       
-      CAN.sendMsgBuf(0xC8, 0, 1, CCP_A2D_BATCH_READ1);// HEX C8 = DEC 200 = ID Kelly IZQUIERDO
+      CAN.sendMsgBuf(recvId1, 0, 1, CCP_A2D_BATCH_READ1);// HEX C8 = DEC 200 = ID Kelly IZQUIERDO
       delay(del);                       // Eco
       
       if (flagRecv) { //cheque si recibe datos // PROBAR FLAGRECEIVE Y CANID
@@ -169,13 +172,13 @@ void loop(){
             
       delay(entremensajes);
 
-      CAN.sendMsgBuf(0xC8, 0, 1, CCP_A2D_BATCH_READ2);// HEX C8 = DEC 200 = ID Kelly IZQUIERDO
+      CAN.sendMsgBuf(recvId1, 0, 1, CCP_A2D_BATCH_READ2);// HEX C8 = DEC 200 = ID Kelly IZQUIERDO
       delay(del);                       // Eco
       
       CAN.readMsgBuf(&len, buff);
       
       if (flagRecv) { //cheque si recibe datos // PROBAR FLAGRECEIVE Y CANID
-      //  flagRecv = 0; //borrar flag
+      //flagRecv = 0; //borrar flag
       
         dataToSend[2] = 1;              // Send KELLY ID 
         dataToSend[3] = 01;             // Primer Digito= Kelly iz/der, Segundo Digito = Cual request
@@ -194,7 +197,7 @@ void loop(){
       CAN.readMsgBuf(&len, buff);
       
       if (flagRecv) { //cheque si recibe datos // PROBAR FLAGRECEIVE Y CANID
-      //  flagRecv = 0; //borrar flag
+      //flagRecv = 0; //borrar flag
       
         dataToSend[2] = 1;              // Send KELLY ID 
         dataToSend[3] = 11;             // Primer Digito= Kelly iz/der, Segundo Digito = Cual request
@@ -207,13 +210,13 @@ void loop(){
             
       delay(entremensajes);
 
-      CAN.sendMsgBuf(0xC8, 0, 1, CPP_MONITOR1);// HEX C8 = DEC 200 = ID Kelly IZQUIERDO
+      CAN.sendMsgBuf(recvId1, 0, 1, CPP_MONITOR1);// HEX C8 = DEC 200 = ID Kelly IZQUIERDO
       delay(del);                       // Eco
       
       CAN.readMsgBuf(&len, buff);
       
       if (flagRecv) { //cheque si recibe datos // PROBAR FLAGRECEIVE Y CANID
-      //  flagRecv = 0; //borrar flag
+      //flagRecv = 0; //borrar flag
       
         dataToSend[2] = 1;              // Send KELLY ID 
         dataToSend[3] = 02;             // Primer Digito= Kelly iz/der, Segundo Digito = Cual request
@@ -232,7 +235,7 @@ void loop(){
       CAN.readMsgBuf(&len, buff);
       
       if (flagRecv) { //cheque si recibe datos // PROBAR FLAGRECEIVE Y CANID
-      //  flagRecv = 0; //borrar flag
+      flagRecv = 0; //borrar flag
       
         dataToSend[2] = 1;              // Send KELLY ID 
         dataToSend[3] = 12;             // Primer Digito= Kelly iz/der, Segundo Digito = Cual request
@@ -245,13 +248,13 @@ void loop(){
             
       delay(entremensajes);
 
-      CAN.sendMsgBuf(0xC8, 0, 1, CPP_MONITOR2);// HEX C8 = DEC 200 = ID Kelly IZQUIERDO
+      CAN.sendMsgBuf(recvId1, 0, 1, CPP_MONITOR2);// HEX C8 = DEC 200 = ID Kelly IZQUIERDO
       delay(del);                       // Eco
       
       CAN.readMsgBuf(&len, buff);
       
       if (flagRecv) { //cheque si recibe datos // PROBAR FLAGRECEIVE Y CANID
-      //  flagRecv = 0; //borrar flag
+      flagRecv = 0; //borrar flag
       
         dataToSend[2] = 1;              // Send KELLY ID 
         dataToSend[3] = 03;             // Primer Digito= Kelly iz/der, Segundo Digito = Cual request
@@ -270,7 +273,7 @@ void loop(){
       CAN.readMsgBuf(&len, buff);
       
       if (flagRecv) { //cheque si recibe datos // PROBAR FLAGRECEIVE Y CANID
-      //  flagRecv = 0; //borrar flag
+      flagRecv = 0; //borrar flag
       
         dataToSend[2] = 1;              // Send KELLY ID 
         dataToSend[3] = 13;             // Primer Digito= Kelly iz/der, Segundo Digito = Cual request
@@ -283,13 +286,13 @@ void loop(){
             
       delay(entremensajes);
 
-      CAN.sendMsgBuf(0xC8, 0, 2, COM_SW_ACC);// HEX C8 = DEC 200 = ID Kelly IZQUIERDO
+      CAN.sendMsgBuf(recvId1, 0, 2, COM_SW_ACC);// HEX C8 = DEC 200 = ID Kelly IZQUIERDO
       delay(del);                       // Eco
       
       CAN.readMsgBuf(&len, buff);
       
       if (flagRecv) { //cheque si recibe datos // PROBAR FLAGRECEIVE Y CANID
-      //  flagRecv = 0; //borrar flag
+      flagRecv = 0; //borrar flag
       
         dataToSend[2] = 1;              // Send KELLY ID 
         dataToSend[3] = 04;             // Primer Digito= Kelly iz/der, Segundo Digito = Cual request
@@ -308,7 +311,7 @@ void loop(){
       CAN.readMsgBuf(&len, buff);
       
       if (flagRecv) { //cheque si recibe datos // PROBAR FLAGRECEIVE Y CANID
-      //  flagRecv = 0; //borrar flag
+      flagRecv = 0; //borrar flag
       
         dataToSend[2] = 1;              // Send KELLY ID 
         dataToSend[3] = 14;             // Primer Digito= Kelly iz/der, Segundo Digito = Cual request
@@ -321,13 +324,13 @@ void loop(){
             
       delay(entremensajes);
 
-      CAN.sendMsgBuf(0xC8, 0, 2, COM_SW_BRK);// HEX C8 = DEC 200 = ID Kelly IZQUIERDO
+      CAN.sendMsgBuf(recvId1, 0, 2, COM_SW_BRK);// HEX C8 = DEC 200 = ID Kelly IZQUIERDO
       delay(del);                       // Eco
       
       CAN.readMsgBuf(&len, buff);
       
       if (flagRecv) { //cheque si recibe datos // PROBAR FLAGRECEIVE Y CANID
-      //  flagRecv = 0; //borrar flag
+      flagRecv = 0; //borrar flag
       
         dataToSend[2] = 1;              // Send KELLY ID 
         dataToSend[3] = 05;             // Primer Digito= Kelly iz/der, Segundo Digito = Cual request
@@ -346,7 +349,7 @@ void loop(){
       CAN.readMsgBuf(&len, buff);
       
       if (flagRecv) { //cheque si recibe datos // PROBAR FLAGRECEIVE Y CANID
-      //  flagRecv = 0; //borrar flag
+      flagRecv = 0; //borrar flag
       
         dataToSend[2] = 1;              // Send KELLY ID 
         dataToSend[3] = 15;             // Primer Digito= Kelly iz/der, Segundo Digito = Cual request
@@ -359,13 +362,13 @@ void loop(){
             
       delay(entremensajes);
 
-      CAN.sendMsgBuf(0xC8, 0, 2, COM_SW_REV);// HEX C8 = DEC 200 = ID Kelly IZQUIERDO
+      CAN.sendMsgBuf(recvId1, 0, 2, COM_SW_REV);// HEX C8 = DEC 200 = ID Kelly IZQUIERDO
       delay(del);                       // Eco
       
       CAN.readMsgBuf(&len, buff);
       
       if (flagRecv) { //cheque si recibe datos // PROBAR FLAGRECEIVE Y CANID
-      //  flagRecv = 0; //borrar flag
+      flagRecv = 0; //borrar flag
       
         dataToSend[2] = 1;              // Send KELLY ID 
         dataToSend[3] = 06;             // Primer Digito= Kelly iz/der, Segundo Digito = Cual request
@@ -384,7 +387,7 @@ void loop(){
       CAN.readMsgBuf(&len, buff);
       
       if (flagRecv) { //cheque si recibe datos // PROBAR FLAGRECEIVE Y CANID
-      //  flagRecv = 0; //borrar flag
+      flagRecv = 0; //borrar flag
       
         dataToSend[2] = 1;              // Send KELLY ID 
         dataToSend[3] = 16;             // Primer Digito= Kelly iz/der, Segundo Digito = Cual request
