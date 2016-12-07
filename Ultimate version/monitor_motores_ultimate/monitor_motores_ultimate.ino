@@ -136,7 +136,7 @@ void loop(){
 
       // send data:  id = 0x00, standrad frame, data len = 8, stmp: data buf
       
-      CAN.sendMsgBuf(C8, 0, 1, CCP_A2D_BATCH_READ1);// HEX C8 = DEC 200 = ID Kelly IZQUIERDO
+      CAN.sendMsgBuf(0xC8, 0, 1, CCP_A2D_BATCH_READ1);// HEX 0xC8 = DEC 200 = ID Kelly IZQUIERDO
       delay(del);                       // Eco
       
       if (flagRecv) { //cheque si recibe datos // PROBAR FLAGRECEIVE Y CANID
@@ -173,7 +173,7 @@ void loop(){
       
       delay(entremensajes);
         
-      CAN.sendMsgBuf(0x12C, 0, 1, CCP_A2D_BATCH_READ1);// HEX 12C = DEC 300 = ID Kelly DERECHO
+      CAN.sendMsgBuf(0x12C, 0, 1, CCP_A2D_BATCH_READ1);// HEX 0x12C = DEC 300 = ID Kelly DERECHO
       delay(del);                       // Eco
       
       CAN.readMsgBuf(&len, buff);
@@ -210,7 +210,7 @@ void loop(){
             
       delay(entremensajes);
 
-      CAN.sendMsgBuf(C8, 0, 1, CCP_A2D_BATCH_READ2);// HEX C8 = DEC 200 = ID Kelly IZQUIERDO
+      CAN.sendMsgBuf(0xC8, 0, 1, CCP_A2D_BATCH_READ2);// HEX 0xC8 = DEC 200 = ID Kelly IZQUIERDO
       delay(del);                       // Eco
       
       CAN.readMsgBuf(&len, buff);
@@ -250,7 +250,7 @@ void loop(){
             
       delay(entremensajes);
 
-      CAN.sendMsgBuf(0x12C, 0, 1, CCP_A2D_BATCH_READ2);// HEX 12C = DEC 300 = ID Kelly DERECHO
+      CAN.sendMsgBuf(0x12C, 0, 1, CCP_A2D_BATCH_READ2);// HEX 0x12C = DEC 300 = ID Kelly DERECHO
       delay(del);                       // Eco
       
       CAN.readMsgBuf(&len, buff);
@@ -290,7 +290,7 @@ void loop(){
             
       delay(entremensajes);
 
-      CAN.sendMsgBuf(C8, 0, 1, CPP_MONITOR1);// HEX C8 = DEC 200 = ID Kelly IZQUIERDO
+      CAN.sendMsgBuf(0xC8, 0, 1, CPP_MONITOR1);// HEX 0xC8 = DEC 200 = ID Kelly IZQUIERDO
       delay(del);                       // Eco
       
       CAN.readMsgBuf(&len, buff);
@@ -330,7 +330,7 @@ void loop(){
             
       delay(entremensajes);
 
-      CAN.sendMsgBuf(0x12C, 0, 1, CPP_MONITOR1);// HEX 12C = DEC 300 = ID Kelly DERECHO
+      CAN.sendMsgBuf(0x12C, 0, 1, CPP_MONITOR1);// HEX 0x12C = DEC 300 = ID Kelly DERECHO
       delay(del);                       // Eco
       
       CAN.readMsgBuf(&len, buff);
@@ -370,7 +370,7 @@ void loop(){
             
       delay(entremensajes);
 
-      CAN.sendMsgBuf(C8, 0, 1, CPP_MONITOR2);// HEX C8 = DEC 200 = ID Kelly IZQUIERDO
+      CAN.sendMsgBuf(0xC8, 0, 1, CPP_MONITOR2);// HEX 0xC8 = DEC 200 = ID Kelly IZQUIERDO
       delay(del);                       // Eco
       
       CAN.readMsgBuf(&len, buff);
@@ -404,7 +404,7 @@ void loop(){
             
       delay(entremensajes);
 
-      CAN.sendMsgBuf(0x12C, 0, 1, CPP_MONITOR2);// HEX 12C = DEC 300 = ID Kelly DERECHO
+      CAN.sendMsgBuf(0x12C, 0, 1, CPP_MONITOR2);// HEX 0x12C = DEC 300 = ID Kelly DERECHO
       delay(del);                       // Eco
       
       CAN.readMsgBuf(&len, buff);
@@ -438,7 +438,7 @@ void loop(){
             
       delay(entremensajes);
 
-      CAN.sendMsgBuf(C8, 0, 2, COM_SW_ACC);// HEX C8 = DEC 200 = ID Kelly IZQUIERDO
+      CAN.sendMsgBuf(0xC8, 0, 2, COM_SW_ACC);// HEX 0xC8 = DEC 200 = ID Kelly IZQUIERDO
       delay(del);                       // Eco
       
       CAN.readMsgBuf(&len, buff);
@@ -462,7 +462,7 @@ void loop(){
             
       delay(entremensajes);
 
-      CAN.sendMsgBuf(0x12C, 0, 2, COM_SW_ACC);// HEX 12C = DEC 300 = ID Kelly DERECHO
+      CAN.sendMsgBuf(0x12C, 0, 2, COM_SW_ACC);// HEX 0x12C = DEC 300 = ID Kelly DERECHO
       delay(del);                       // Eco
       
       CAN.readMsgBuf(&len, buff);
@@ -486,7 +486,7 @@ void loop(){
             
       delay(entremensajes);
 
-      CAN.sendMsgBuf(C8, 0, 2, COM_SW_BRK);// HEX C8 = DEC 200 = ID Kelly IZQUIERDO
+      CAN.sendMsgBuf(0xC8, 0, 2, COM_SW_BRK);// HEX 0xC8 = DEC 200 = ID Kelly IZQUIERDO
       delay(del);                       // Eco
       
       CAN.readMsgBuf(&len, buff);
@@ -510,7 +510,7 @@ void loop(){
             
       delay(entremensajes);
 
-      CAN.sendMsgBuf(0x12C, 0, 2, COM_SW_BRK);// HEX 12C = DEC 300 = ID Kelly DERECHO
+      CAN.sendMsgBuf(0x12C, 0, 2, COM_SW_BRK);// HEX 0x12C = DEC 300 = ID Kelly DERECHO
       delay(del);                       // Eco
       
       CAN.readMsgBuf(&len, buff);
@@ -534,7 +534,7 @@ void loop(){
             
       delay(entremensajes);
 
-      CAN.sendMsgBuf(C8, 0, 2, COM_SW_REV);// HEX C8 = DEC 200 = ID Kelly IZQUIERDO
+      CAN.sendMsgBuf(0xC8, 0, 2, COM_SW_REV);// HEX 0xC8 = DEC 200 = ID Kelly IZQUIERDO
       delay(del);                       // Eco
       
       CAN.readMsgBuf(&len, buff);
@@ -558,7 +558,7 @@ void loop(){
             
       delay(entremensajes);
 
-      CAN.sendMsgBuf(0x12C, 0, 2, COM_SW_REV);// HEX 12C = DEC 300 = ID Kelly DERECHO
+      CAN.sendMsgBuf(0x12C, 0, 2, COM_SW_REV);// HEX 0x12C = DEC 300 = ID Kelly DERECHO
       delay(del);                       // Eco
       
       CAN.readMsgBuf(&len, buff);
