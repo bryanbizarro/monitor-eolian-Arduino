@@ -41,21 +41,13 @@
 #include <SPI.h>
 #include <SoftwareSerial.h>
 
-#define pint1 A0
-#define pint2 A1
-#define timi 256
-#define maxTimi 1024
-#define recvIdKelly1 0xC8
-#define sendIdKelly1 0xD2
-#define recvIdKelly2 0xC9
-#define sendIdKelly2 0xD3
-#define pinRX 10
-#define pinTX 11
-
 
 //  SOFTWARE SERIAL ALLOWS TO READ A SECOND BUFFER SERIAL IN tx & rx PINS
 
-SoftwareSerial mySerial(pinRX, pinTX); 
+int rx = 10;
+int tx = 11;
+
+SoftwareSerial mySerial(rx, tx); 
 
 //  END SOFTWARE SERIAL
 
@@ -80,6 +72,7 @@ const int SPI_CS_PIN = 9;
 /// Tx
 
 int del = 5;
+int timi = 0;
 
 /// Rx
 unsigned char flagRecv = 0;
@@ -107,9 +100,6 @@ long lastKelly1Time = 0;
 long lastKelly2Time = 0;
 long lastMpptTime = 0;
 
-int kellyId;
-int kellyInfo;
-
 
 
 
@@ -119,7 +109,7 @@ MCP_CAN CAN(SPI_CS_PIN);                                    // Set CS pin
 
 void setup()
 {
-  mySerial.begin(115200);
+  mySerial.begin(9600);
   Serial.begin(57600);
 
 START_INIT:
@@ -201,27 +191,8 @@ bool read2Serial(){
           delay(timi);
           Serial.print("MPPT");Serial.print(MPPTId);Serial.print("_UOUT");Serial.print(Uout);Serial.print("\n");
           delay(timi);
-        } else if (inData[2] == 1){
-          kellyId = inData[3]/10;
-          kellyInfo = inData[3]%10;
-          index = 0;
-          
-          if(kellyInfo == 1){
-            Serial.print("I");Serial.print(kellyInfo);Serial.print("_A,");Serial.print(buff[5]);Serial.print("\n");
-            Serial.print("I");Serial.print(kellyInfo);Serial.print("_B,");Serial.print(buff[6]);Serial.print("\n");
-            Serial.print("I");Serial.print(kellyInfo);Serial.print("_C,");Serial.print(buff[7]);Serial.print("\n");
-            Serial.print("V");Serial.print(kellyInfo);Serial.print("_A,");Serial.print(buff[8]);Serial.print("\n");
-            Serial.print("V");Serial.print(kellyInfo);Serial.print("_B,");Serial.print(buff[9]);Serial.print("\n");
-            Serial.print("V");Serial.print(kellyInfo);Serial.print("_C,");Serial.print(buff[10]);Serial.print("\n");
-          } else if(kellyInfo == 2){
-            Serial.print("ENG");Serial.print(kellyInfo);Serial.print("_RPM,");Serial.print((buff[5])<<8|buff[6]);Serial.print("\n");
-            Serial.print("ENG");Serial.print(kellyInfo);Serial.print("_ERR_CODE,");Serial.print((buff[8])<<8|buff[9]);Serial.print("\n");
-          } else if(kellyInfo == 3){
-            Serial.print("ENG");Serial.print(kellyInfo);Serial.print("_PWM,");Serial.print(buff[5]);Serial.print("\n");
-            Serial.print("ENG");Serial.print(kellyInfo);Serial.print("_EMR,");Serial.print(buff[6]);Serial.print("\n");
-            Serial.print("ENG");Serial.print(kellyInfo);Serial.print("_TEMP,");Serial.print(buff[7]);Serial.print("\n");      // Temperatura motor: Celcius
-            Serial.print("Kelly");Serial.print(kellyInfo);Serial.print("_Temp,");Serial.print(buff[8]);Serial.print("\n");
-          }
+        } else if (inData[2] == 2){
+          Serial.print("ARDUINO2_ERROR");
         } else if (inData[2] == 1){
           Serial.print("ARDUINO_ReadyPapi!");
         } else {
@@ -246,38 +217,13 @@ void loop(){
 
 /*////////////////////   BLOQUE DE REQUEST KELLYS   ////////////////////*/
 
-  if(millis() - lastKelly1Time > maxTimi){ // Reinicia engineData para la decena en caso de que no se reciba información pasado un segundo.
-    engineData = 10 + engineData%10;
-  }
-  if(millis() - lastKelly2Time > maxTimi){
-    engineData = engineData/10*10 + 1;  // Idem para la unidad.
-  }
-  
-  if((millis() - lastKelly1Time) > timi){
-    if(engineData/10 == 1){
-      CAN.sendMsgBuf(recvIdKelly1, 0, 1, CCP_A2D_BATCH_READ2);
-      engineData = 2*10 + engineData%10;
-    } else if (engineData/10 == 3){
-      CAN.sendMsgBuf(recvIdKelly1, 0, 1, CPP_MONITOR2);
-      engineData = 4*10 + engineData%10;
-    } else if (engineData/10 == 5){
-      CAN.sendMsgBuf(recvIdKelly1, 0, 1, CPP_MONITOR1);
-      engineData = 6*10 + engineData%10;
-    }
+  if((millis() - lastKelly1Time) > 56){
+      CAN.sendMsgBuf(0xC7, 0, 1, CPP_MONITOR1);
     lastKelly1Time = millis();
   }
 
-  if((millis() - lastKelly2Time) > timi){
-    if(engineData%10 == 1){
-      CAN.sendMsgBuf(recvIdKelly2, 0, 1, CCP_A2D_BATCH_READ2);
-      engineData = engineData/10*10 + 2;
-    } else if (engineData%10 == 3){
-      CAN.sendMsgBuf(recvIdKelly2, 0, 1, CPP_MONITOR2);
-      engineData = engineData/10*10 + 4;
-    } else if (engineData%10 == 5){
-      CAN.sendMsgBuf(recvIdKelly2, 0, 1, CPP_MONITOR1);
-      engineData = engineData/10*10 + 6;
-    }
+  if((millis() - lastKelly2Time) > 56){
+      CAN.sendMsgBuf(0x6B, 0, 1, CPP_MONITOR1);
     lastKelly2Time = millis();
   }
 
@@ -369,46 +315,24 @@ void loop(){
 
 /*////////////////////   LECTURA DE DATOS KELLYS   ////////////////////*/
 
-  else if(canId == sendIdKelly1){
-    if(engineData/10 == 2){         // Si el primer digito de engineData es '1' se proceden a leer corrientes y voltajes.
-      Serial.print("I1_A,");Serial.print(buff[0]);Serial.print("\n");
-      Serial.print("I1_B,");Serial.print(buff[1]);Serial.print("\n");
-      Serial.print("I1_C,");Serial.print(buff[2]);Serial.print("\n");
-      Serial.print("V1_A,");Serial.print(buff[3]);Serial.print("\n");
-      Serial.print("V1_B,");Serial.print(buff[4]);Serial.print("\n");
-      Serial.print("V1_C,");Serial.print(buff[5]);Serial.print("\n");
-      engineData = 3*10 + engineData%10;
-    } else if(engineData/10 == 4){  // Si el 1er digito de engineData es '2' se procede a leer RPM.
-      Serial.print("ENG1_RPM,");Serial.print((buff[0])<<8|buff[1]);Serial.print("\n");
-      Serial.print("ENG1_ERR_CODE,");Serial.print((buff[3])<<8|buff[4]);Serial.print("\n");
-      engineData = 5*10 + engineData%10;
-    } else if(engineData/10 == 6){                        // Si el 1er digito de engineData es '3' se procede a leer la temperatura.
-      Serial.print("ENG1_PWM,");Serial.print(buff[0]);Serial.print("\n");
-      Serial.print("ENG1_EMR,");Serial.print(buff[1]);Serial.print("\n");
-      Serial.print("ENG1_TEMP,");Serial.print(buff[2]);Serial.print("\n");      // Temperatura motor: Celcius
-      Serial.print("Kelly1_Temp,");Serial.print(buff[3]);Serial.print("\n");
-      engineData = 1*10 + engineData%10;
-    } 
-  } else if(canId == sendIdKelly2){
-    if(engineData%10 == 2){         // 2do digito de engineData es 1, lee corrientes y voltajes
-      Serial.print("I2_A,");Serial.print(buff[0]);Serial.print("\n");
-      Serial.print("I2_B,");Serial.print(buff[1]);Serial.print("\n");
-      Serial.print("I2_C,");Serial.print(buff[2]);Serial.print("\n");
-      Serial.print("V2_A,");Serial.print(buff[3]);Serial.print("\n");
-      Serial.print("V2_B,");Serial.print(buff[4]);Serial.print("\n");
-      Serial.print("V2_C,");Serial.print(buff[5]);Serial.print("\n");
-      engineData = engineData/10*10 + 3;
-    } else if(engineData%10 == 4){  // 2do digito de engineData es 2, lee RPM.
-      Serial.print("ENG2_RPM,");Serial.print((buff[0])<<8|buff[1]);Serial.print("\n");
-      Serial.print("ENG2_ERR_CODE,");Serial.print((buff[3])<<8|buff[4]);Serial.print("\n");
-      engineData = engineData/10*10 + 5;
-    } else if(engineData%10 == 6){                        // 2do digito de engineData es 3, lee temperatura.
-      Serial.print("ENG2_PWM,");Serial.print(buff[0]);Serial.print("\n");
-      Serial.print("ENG2_EMR,");Serial.print(buff[1]);Serial.print("\n");
-      Serial.print("ENG2_TEMP,");Serial.print(buff[2]);Serial.print("\n");      // Temperatura motor: Celcius
-      Serial.print("Kelly2_Temp,");Serial.print(buff[3]);Serial.print("\n");
-      engineData = engineData/10*10 + 1;
-    } 
+  else if(canId == 0xC8)  // Lectura datos Motor Izquierdo
+  {
+                           // Si el 1er digito de engineData es '3' se procede a leer la temperatura.
+      Serial.print("ENG_TEMP_1,");Serial.print(buff[2]);Serial.print("\n");      // Temperatura motor: Celcius
+  }
+  
+  else if(canId == 0x12C) // Lectura de datos del motor derecho.
+
+  /* 
+  Recordar que '%' es 'resto de la división entera'
+  Entonces, 12%10 devuelve 2, el resto de 12/10.
+  Además, corresponde al último digito del número.
+  */
+  
+  {
+                        // 2do digito de engineData es 3, lee temperatura.
+      Serial.print("ENG_TEMP_2,");Serial.print(buff[2]);Serial.print("\n");      // Temperatura motor: Celcius
+    
   }
 
 /*////////////////////   FIN KELLYS   ////////////////////*/
@@ -462,8 +386,6 @@ void loop(){
 /*////////////////////   FIN REQUEST MPPTs   ////////////////////*/
     
   Serial.flush();
-
-  read2Serial();
 
   if(charsRead > 12){
     charsRead = 0;

@@ -37,8 +37,6 @@
  *  ║13║ || 255 - FIJO COMO PROTOCOLO ||
  *  ╚  ╝
  */
-
-#define revMode true
  
 #include <mcp_can.h>
 #include <SPI.h>
@@ -46,17 +44,11 @@
 
 #define pint1 A0
 #define pint2 A1
-#define timi 1024
-#define maxTimi 4096
-#define recvIdKelly1 0xC8
-#define sendIdKelly1 0xD2
-#define recvIdKelly2 0xC9
-#define sendIdKelly2 0xD3
-#define pinRX 10
-#define pinTX 11
-
-SoftwareSerial mySerial(pinRX, pinTX); // RX, TX
-unsigned char dataToSend[13];
+#define timi 100
+#define recvIdKelly1 0x95
+#define sendIdKelly1 0x96
+#define recvIdKelly2 0x6B
+#define sendIdKelly2 0x12C
 
 /* ////////// VARIABLES CAN SHIELD ////////// */
 
@@ -98,12 +90,6 @@ MCP_CAN CAN(SPI_CS_PIN);
 void setup() {
   
   Serial.begin(57600);
-  mySerial.begin(115200);
-  Serial.begin(57600);   // Iniciar Serial para debug
-  dataToSend[0]   = 255; //Header
-  dataToSend[1]   = 255; //Header
-  dataToSend[4]   = 255; //Middle
-  dataToSend[12]  = 255; //END
 
 START_INIT:
 
@@ -130,11 +116,6 @@ void MCP2515_ISR()
   flagRecv = 1;
 }
 
-void SendMsg(){
-  for(unsigned char charToSend:dataToSend){
-    mySerial.write(charToSend);
-  }
-}
 
 void loop() {
 
@@ -148,14 +129,14 @@ void loop() {
 
   //// FIN GAP ////
 
-  if(millis() - lastKelly1Time > maxTimi){ // Reinicia engineData para la decena en caso de que no se reciba información pasado un segundo.
+  if(millis() - lastKelly1Time > 1024){ // Reinicia engineData para la decena en caso de que no se reciba información pasado un segundo.
     engineData = 10 + engineData%10;
   }
-  if(millis() - lastKelly2Time > maxTimi){
+  if(millis() - lastKelly2Time > 1024){
     engineData = engineData/10*10 + 1;  // Idem para la unidad.
   }
   
-  if((millis() - lastKelly1Time) > timi){
+  if((millis() - lastKelly1Time) > 56){
     if(engineData/10 == 1){
       CAN.sendMsgBuf(recvIdKelly1, 0, 1, CCP_A2D_BATCH_READ2);
       engineData = 2*10 + engineData%10;
@@ -165,17 +146,11 @@ void loop() {
     } else if (engineData/10 == 5){
       CAN.sendMsgBuf(recvIdKelly1, 0, 1, CPP_MONITOR1);
       engineData = 6*10 + engineData%10;
-    } else if ((engineData/10 == 7) && (revMode == true)){
-      CAN.sendMsgBuf(recvIdKelly1, 0, 2, COM_SW_ACC);
-      engineData = 8*10 + engineData%10;
-    } else if ((engineData/10 == 9) && (revMode == true)){
-      CAN.sendMsgBuf(recvIdKelly1, 0, 2, COM_SW_REV);
-      engineData = 0*10 + engineData%10;
     }
     lastKelly1Time = millis();
   }
 
-  if((millis() - lastKelly2Time) > timi){
+  if((millis() - lastKelly2Time) > 56){
     if(engineData%10 == 1){
       CAN.sendMsgBuf(recvIdKelly2, 0, 1, CCP_A2D_BATCH_READ2);
       engineData = engineData/10*10 + 2;
@@ -185,12 +160,6 @@ void loop() {
     } else if (engineData%10 == 5){
       CAN.sendMsgBuf(recvIdKelly2, 0, 1, CPP_MONITOR1);
       engineData = engineData/10*10 + 6;
-    } else if ((engineData%10 == 7) && (revMode == true)){
-      CAN.sendMsgBuf(recvIdKelly2, 0, 2, COM_SW_ACC);
-      engineData = engineData/10*10 + 8;
-    } else if ((engineData%10 == 9) && (revMode == true)){
-      CAN.sendMsgBuf(recvIdKelly2, 0, 2, COM_SW_REV);
-      engineData = engineData/10*10 + 0;
     }
     lastKelly2Time = millis();
   }
@@ -204,6 +173,7 @@ void loop() {
   
   if(canId == sendIdKelly1){
     if(engineData/10 == 2){         // Si el primer digito de engineData es '1' se proceden a leer corrientes y voltajes.
+<<<<<<< HEAD
       dataToSend[2] = 1;
       dataToSend[3] = 01;
       for(int j = 5; j < 12; j++){
@@ -238,27 +208,29 @@ void loop() {
       }
       SendMsg();
       
+=======
+      Serial.print("I1_A,");Serial.print(buff[0]);Serial.print("\n");
+      Serial.print("I1_B,");Serial.print(buff[1]);Serial.print("\n");
+      Serial.print("I1_C,");Serial.print(buff[2]);Serial.print("\n");
+      Serial.print("V1_A,");Serial.print(buff[3]);Serial.print("\n");
+      Serial.print("V1_B,");Serial.print(buff[4]);Serial.print("\n");
+      Serial.print("V1_C,");Serial.print(buff[5]);Serial.print("\n");
+      engineData = 3*10 + engineData%10;
+    } else if(engineData/10 == 4){  // Si el 1er digito de engineData es '2' se procede a leer RPM.
+      Serial.print("ENG_RPM_1,");Serial.print((buff[0])<<8|buff[1]);Serial.print("\n");
+      Serial.print("ENG1_ERR_CODE,");Serial.print((buff[3])<<8|buff[4]);Serial.print("\n");
+      engineData = 5*10 + engineData%10;
+    } else if(engineData/10 == 6){                        // Si el 1er digito de engineData es '3' se procede a leer la temperatura.
+>>>>>>> parent of 13434e0... actualizacion motores
       Serial.print("ENG1_PWM,");Serial.print(buff[0]);Serial.print("\n");
       Serial.print("ENG1_EMR,");Serial.print(buff[1]);Serial.print("\n");
       Serial.print("ENG1_TEMP,");Serial.print(buff[2]);Serial.print("\n");      // Temperatura motor: Celcius
       Serial.print("Kelly1_Temp,");Serial.print(buff[3]);Serial.print("\n");
       engineData = 1*10 + engineData%10;
-      if(revMode) { 
-        engineData = 7*10 + engineData%10;
-      }
-    } else if(engineData/10 == 8){  
-                            
-      Serial.print("ENG1_Current_Throttle_Switch_Status,");Serial.print(buff[0]);Serial.print("\n");      // Throttle Status
-      engineData = 9*10 + engineData%10;
-      
-    } else if(engineData/10 == 0){     
-                         
-      Serial.print("ENG1_Current_Reserve_Switch_Status,");Serial.print(buff[0]);Serial.print("\n");      // Reverse Status
-      engineData = 1*10 + engineData%10;
-      
     } 
   } else if(canId == sendIdKelly2){
     if(engineData%10 == 2){         // 2do digito de engineData es 1, lee corrientes y voltajes
+<<<<<<< HEAD
 
       dataToSend[2] = 1;
       dataToSend[3] = 11;
@@ -312,8 +284,21 @@ void loop() {
     } else if(engineData%10 == 0){     
                          
       Serial.print("ENG2_Current_Reverse_Switch_Status,");Serial.print(buff[0]);Serial.print("\n");      // Reverse Status
+=======
+      Serial.print("I2_A,");Serial.print(buff[0]);Serial.print("\n");
+      Serial.print("I2_B,");Serial.print(buff[1]);Serial.print("\n");
+      Serial.print("I2_C,");Serial.print(buff[2]);Serial.print("\n");
+      Serial.print("V2_A,");Serial.print(buff[3]);Serial.print("\n");
+      Serial.print("V2_B,");Serial.print(buff[4]);Serial.print("\n");
+      Serial.print("V2_C,");Serial.print(buff[5]);Serial.print("\n");
+      engineData = engineData/10*10 + 3;
+    } else if(engineData%10 == 4){  // 2do digito de engineData es 2, lee RPM.
+      Serial.print("ENG_RPM_2,");Serial.print((buff[0])<<8|buff[1]);Serial.print("\n");
+      engineData = engineData/10*10 + 5;
+    } else if(engineData%10 == 6){                        // 2do digito de engineData es 3, lee temperatura.
+      Serial.print("ENG_TEMP_2,");Serial.print(buff[2]);Serial.print("\n");      // Temperatura motor: Celcius
+>>>>>>> parent of 13434e0... actualizacion motores
       engineData = engineData/10*10 + 1;
-      
     } 
   }
 
