@@ -331,8 +331,7 @@ void loop(){
       delay(entremensajes);
 
       CAN.sendMsgBuf(0x12C, 0, 1, CPP_MONITOR1);// HEX 0x12C = DEC 300 = ID Kelly DERECHO
-      delay(del);                       // Eco
-      
+      delay(del);                       // Eco      
       CAN.readMsgBuf(&len, buff);
       
       if (flagRecv) { //cheque si recibe datos // PROBAR FLAGRECEIVE Y CANID
@@ -528,7 +527,7 @@ void loop(){
 
         //Mostrar en Serial
             int CurrentThrottleSwitchStatus = buff[0];
-            Serial.print("Kelly_DER");Serial.print("CurrentBrakeSwitchStatus");Serial.print(CurrentBrakeSwitchStatus);Serial.print("\n");
+            Serial.print("Kelly_DER");Serial.print("CurrentBrakeSwitchStatus");Serial.print(CurrentThrottleSwitchStatus);Serial.print("\n");
             delay(timi);
       }
             

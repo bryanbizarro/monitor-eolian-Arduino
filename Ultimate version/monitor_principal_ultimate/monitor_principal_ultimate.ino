@@ -47,7 +47,7 @@ int tx = 11;
 SoftwareSerial SerialKelly(rx, tx); 
 
 int del = 5;
-int timi = 0;
+int timi = 1;
 
 // Read2Serial vars
 int MPPTId;
@@ -74,12 +74,11 @@ long lastMpptTime = 0;
 void setup() {
   SerialKelly.begin(9600);
   Serial.begin(57600);
-
 }
 
 void loop() {
 
-  bool read2Serial(){
+
   while(SerialKelly.available() || (charsRead < 14)){  //Revisar si es necesario un timeout
     //Serial.println("SerialIsAvailable");
     if(index < 14){
@@ -88,7 +87,7 @@ void loop() {
       inData[index] = inChar;
       index++;
       //Serial.print("inChar: ");Serial.println(inChar);
-    } else {
+    }else{
       //inChar = SerialKelly.read();
       //inData[index] = inChar;
       //index++;
@@ -105,11 +104,11 @@ void loop() {
         // MPPT //
         if(inData[2] == 0){  //REVISAR que igualdad se cumpla!!!
           MPPTId = inData[3]; //0 o 1
-          index1 = 0;
+          int index1 = 0;
           
           for(int j = 5;j<13;j++){    // Sin byte [13] = 255
             buff[index1] = inData[j];
-            index1++
+            index1++;
           }
 
           if (MPPTId == 30){
@@ -178,13 +177,13 @@ void loop() {
         // Fin MPPT //
         
         // Kelly //
-        } else if (inData[2] == 1){   
+        }else if (inData[2] == 1){
 
           KellyId = inData[3]; // Primer Digito= Kelly iz/der, Segundo Digito = Cual request
-          index1 = 0;
+          int index1 = 0;
           for(int j = 5;j<13;j++){    // Sin byte [13] = 255
             buff[index1] = inData[j];
-            index1++
+            index1++;
           }
           if (KellyId== 30){
             Serial.print("CAN KELLY RECONOCIDO");Serial.print("\n");
@@ -377,14 +376,15 @@ void loop() {
           } else {
           Serial.print("BIT_ERROR_READERROR");
           }
-      } else {
+      } //Fin Kelly
+      
+      }else{ //Si no lee bien altiro, acumular datos
         for(int j = 0; j<13;j++){
           inData[j] = inData[j+1];
         }
         index -= 1;
       }
-    }
+      }
     charsRead++;
-  }
-}
-}
+  } //While Serial available
+}//Fin loop
