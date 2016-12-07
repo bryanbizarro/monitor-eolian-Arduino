@@ -66,6 +66,7 @@ unsigned char COM_SW_REV[2] = {0x44, 0};        // [0]Current Reverse switch sta
 
 // Delay de eco Request/Receive de CAN | Delay entre requests
 int del = 5;
+int timi = 5;
 int entremensajes = 10;
 
 /// Buff RX inicial
@@ -135,13 +136,14 @@ void loop(){
 
       // send data:  id = 0x00, standrad frame, data len = 8, stmp: data buf
       
-      CAN.sendMsgBuf(recvId1, 0, 1, CCP_A2D_BATCH_READ1);// HEX C8 = DEC 200 = ID Kelly IZQUIERDO
+      CAN.sendMsgBuf(C8, 0, 1, CCP_A2D_BATCH_READ1);// HEX C8 = DEC 200 = ID Kelly IZQUIERDO
       delay(del);                       // Eco
       
       if (flagRecv) { //cheque si recibe datos // PROBAR FLAGRECEIVE Y CANID
       //  flagRecv = 0; //borrar flag
       CAN.readMsgBuf(&len, buff);
-      
+
+        //Enviar por myserial
         dataToSend[2] = 1;              // Send KELLY ID 
         dataToSend[3] = 00;             // Primer Digito= Kelly iz/der, Segundo Digito = Cual request
         
@@ -149,6 +151,24 @@ void loop(){
           dataToSend[j] = buff[j-5];
         }
         SendMsg();
+
+        //Mostrar en Serial
+            int Brake = buff[0];
+            int TPS = buff[1];
+            int OperationVolt = buff[2];
+            int Vs = buff[3];
+            int Bmas = buff[4];
+
+            Serial.print("Kelly_IZ");Serial.print("Brake");Serial.print(Brake);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_IZ");Serial.print("TPS");Serial.print(TPS);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_IZ");Serial.print("OperationVolt");Serial.print(OperationVolt);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_IZ");Serial.print("Vs");Serial.print(Vs);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_IZ");Serial.print("Bmas");Serial.print(Bmas);Serial.print("\n");
+            delay(timi);
       }
       
       delay(entremensajes);
@@ -168,11 +188,29 @@ void loop(){
           dataToSend[j] = buff[j-5];
         }
         SendMsg();
+
+        //Mostrar en Serial
+            int Brake = buff[0];
+            int TPS = buff[1];
+            int OperationVolt = buff[2];
+            int Vs = buff[3];
+            int Bmas = buff[4];
+
+            Serial.print("Kelly_DER");Serial.print("Brake");Serial.print(Brake);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_DER");Serial.print("TPS");Serial.print(TPS);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_DER");Serial.print("OperationVolt");Serial.print(OperationVolt);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_DER");Serial.print("Vs");Serial.print(Vs);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_DER");Serial.print("Bmas");Serial.print(Bmas);Serial.print("\n");
+            delay(timi);
       }
             
       delay(entremensajes);
 
-      CAN.sendMsgBuf(recvId1, 0, 1, CCP_A2D_BATCH_READ2);// HEX C8 = DEC 200 = ID Kelly IZQUIERDO
+      CAN.sendMsgBuf(C8, 0, 1, CCP_A2D_BATCH_READ2);// HEX C8 = DEC 200 = ID Kelly IZQUIERDO
       delay(del);                       // Eco
       
       CAN.readMsgBuf(&len, buff);
@@ -187,6 +225,27 @@ void loop(){
           dataToSend[j] = buff[j-5];
         }
         SendMsg();
+
+        //Mostrar en Serial
+            int Ia = buff[0];
+            int Ib = buff[1];
+            int Ic = buff[2];
+            int Va = buff[3];
+            int Vb = buff[4];
+            int Vc = buff[5];
+
+            Serial.print("Kelly_IZ");Serial.print("Ia");Serial.print(Ia);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_IZ");Serial.print("Ib");Serial.print(Ib);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_IZ");Serial.print("Ic");Serial.print(Ic);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_IZ");Serial.print("Va");Serial.print(Va);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_IZ");Serial.print("Vb");Serial.print(Vb);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_IZ");Serial.print("Vc");Serial.print(Vc);Serial.print("\n");
+            delay(timi);
       }
             
       delay(entremensajes);
@@ -206,11 +265,32 @@ void loop(){
           dataToSend[j] = buff[j-5];
         }
         SendMsg();
+
+        //Mostrar en Serial
+            int Ia = buff[0];
+            int Ib = buff[1];
+            int Ic = buff[2];
+            int Va = buff[3];
+            int Vb = buff[4];
+            int Vc = buff[5];
+
+            Serial.print("Kelly_DER");Serial.print("Ia");Serial.print(Ia);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_DER");Serial.print("Ib");Serial.print(Ib);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_DER");Serial.print("Ic");Serial.print(Ic);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_DER");Serial.print("Va");Serial.print(Va);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_DER");Serial.print("Vb");Serial.print(Vb);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_DER");Serial.print("Vc");Serial.print(Vc);Serial.print("\n");
+            delay(timi);
       }
             
       delay(entremensajes);
 
-      CAN.sendMsgBuf(recvId1, 0, 1, CPP_MONITOR1);// HEX C8 = DEC 200 = ID Kelly IZQUIERDO
+      CAN.sendMsgBuf(C8, 0, 1, CPP_MONITOR1);// HEX C8 = DEC 200 = ID Kelly IZQUIERDO
       delay(del);                       // Eco
       
       CAN.readMsgBuf(&len, buff);
@@ -225,6 +305,27 @@ void loop(){
           dataToSend[j] = buff[j-5];
         }
         SendMsg();
+
+        //Mostrar en Serial
+            int PWM = buff[0];
+            int EnableMotorRotation = buff[1];
+            int MotorTemp = buff[2];
+            int ControllerTemp = buff[3];
+            int HighSideFETMOSTemp = buff[4];
+            int LowSideFETMOSTemp = buff[5];
+
+            Serial.print("Kelly_IZ");Serial.print("PWM");Serial.print(PWM);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_IZ");Serial.print("EnableMotorRotation");Serial.print(EnableMotorRotation);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_IZ");Serial.print("MotorTemp");Serial.print(MotorTemp);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_IZ");Serial.print("ControllerTemp");Serial.print(ControllerTemp);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_IZ");Serial.print("HighSideFETMOSTemp");Serial.print(HighSideFETMOSTemp);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_IZ");Serial.print("LowSideFETMOSTemp");Serial.print(LowSideFETMOSTemp);Serial.print("\n");
+            delay(timi);
       }
             
       delay(entremensajes);
@@ -244,11 +345,32 @@ void loop(){
           dataToSend[j] = buff[j-5];
         }
         SendMsg();
+
+        //Mostrar en Serial
+            int PWM = buff[0];
+            int EnableMotorRotation = buff[1];
+            int MotorTemp = buff[2];
+            int ControllerTemp = buff[3];
+            int HighSideFETMOSTemp = buff[4];
+            int LowSideFETMOSTemp = buff[5];
+
+            Serial.print("Kelly_DER");Serial.print("PWM");Serial.print(PWM);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_DER");Serial.print("EnableMotorRotation");Serial.print(EnableMotorRotation);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_DER");Serial.print("MotorTemp");Serial.print(MotorTemp);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_DER");Serial.print("ControllerTemp");Serial.print(ControllerTemp);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_DER");Serial.print("HighSideFETMOSTemp");Serial.print(HighSideFETMOSTemp);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_DER");Serial.print("LowSideFETMOSTemp");Serial.print(LowSideFETMOSTemp);Serial.print("\n");
+            delay(timi);
       }
             
       delay(entremensajes);
 
-      CAN.sendMsgBuf(recvId1, 0, 1, CPP_MONITOR2);// HEX C8 = DEC 200 = ID Kelly IZQUIERDO
+      CAN.sendMsgBuf(C8, 0, 1, CPP_MONITOR2);// HEX C8 = DEC 200 = ID Kelly IZQUIERDO
       delay(del);                       // Eco
       
       CAN.readMsgBuf(&len, buff);
@@ -263,6 +385,21 @@ void loop(){
           dataToSend[j] = buff[j-5];
         }
         SendMsg();
+
+        //Mostrar en Serial
+            int RPM = (buff[0])<<8|buff[1];
+            int SomeValue = buff[2];
+            int MSB_ERROR_CODE = buff[3];
+            int LSB_ERROR_CODE;
+
+            Serial.print("Kelly_IZ");Serial.print("RPM");Serial.print(RPM);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_IZ");Serial.print("SomeValue");Serial.print(SomeValue);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_IZ");Serial.print("MSB_ERROR_CODE");Serial.print(MSB_ERROR_CODE);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_IZ");Serial.print("LSB_ERROR_CODE");Serial.print(LSB_ERROR_CODE);Serial.print("\n");
+            delay(timi);
       }
             
       delay(entremensajes);
@@ -282,11 +419,26 @@ void loop(){
           dataToSend[j] = buff[j-5];
         }
         SendMsg();
+
+        //Mostrar en Serial
+            int RPM = (buff[0])<<8|buff[1];
+            int SomeValue = buff[2];
+            int MSB_ERROR_CODE = buff[3];
+            int LSB_ERROR_CODE;
+
+            Serial.print("Kelly_DER");Serial.print("RPM");Serial.print(RPM);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_DER");Serial.print("SomeValue");Serial.print(SomeValue);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_DER");Serial.print("MSB_ERROR_CODE");Serial.print(MSB_ERROR_CODE);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_DER");Serial.print("LSB_ERROR_CODE");Serial.print(LSB_ERROR_CODE);Serial.print("\n");
+            delay(timi);
       }
             
       delay(entremensajes);
 
-      CAN.sendMsgBuf(recvId1, 0, 2, COM_SW_ACC);// HEX C8 = DEC 200 = ID Kelly IZQUIERDO
+      CAN.sendMsgBuf(C8, 0, 2, COM_SW_ACC);// HEX C8 = DEC 200 = ID Kelly IZQUIERDO
       delay(del);                       // Eco
       
       CAN.readMsgBuf(&len, buff);
@@ -301,6 +453,11 @@ void loop(){
           dataToSend[j] = buff[j-5];
         }
         SendMsg();
+
+        //Mostrar en Serial
+        int CurrentThrottleSwitchStatus = buff[0];
+            Serial.print("Kelly_IZ");Serial.print("CurrentThrottleSwitchStatus");Serial.print(CurrentThrottleSwitchStatus);Serial.print("\n");
+            delay(timi);
       }
             
       delay(entremensajes);
@@ -320,11 +477,16 @@ void loop(){
           dataToSend[j] = buff[j-5];
         }
         SendMsg();
+
+        //Mostrar en Serial
+            int CurrentThrottleSwitchStatus = buff[0];
+            Serial.print("Kelly_DER");Serial.print("CurrentThrottleSwitchStatus");Serial.print(CurrentThrottleSwitchStatus);Serial.print("\n");
+            delay(timi);
       }
             
       delay(entremensajes);
 
-      CAN.sendMsgBuf(recvId1, 0, 2, COM_SW_BRK);// HEX C8 = DEC 200 = ID Kelly IZQUIERDO
+      CAN.sendMsgBuf(C8, 0, 2, COM_SW_BRK);// HEX C8 = DEC 200 = ID Kelly IZQUIERDO
       delay(del);                       // Eco
       
       CAN.readMsgBuf(&len, buff);
@@ -339,6 +501,11 @@ void loop(){
           dataToSend[j] = buff[j-5];
         }
         SendMsg();
+
+        //Mostrar en Serial
+            int CurrentBrakeSwitchStatus = buff[0];
+            Serial.print("Kelly_IZ");Serial.print("CurrentBrakeSwitchStatus");Serial.print(CurrentBrakeSwitchStatus);Serial.print("\n");
+            delay(timi);
       }
             
       delay(entremensajes);
@@ -358,11 +525,16 @@ void loop(){
           dataToSend[j] = buff[j-5];
         }
         SendMsg();
+
+        //Mostrar en Serial
+            int CurrentThrottleSwitchStatus = buff[0];
+            Serial.print("Kelly_DER");Serial.print("CurrentBrakeSwitchStatus");Serial.print(CurrentBrakeSwitchStatus);Serial.print("\n");
+            delay(timi);
       }
             
       delay(entremensajes);
 
-      CAN.sendMsgBuf(recvId1, 0, 2, COM_SW_REV);// HEX C8 = DEC 200 = ID Kelly IZQUIERDO
+      CAN.sendMsgBuf(C8, 0, 2, COM_SW_REV);// HEX C8 = DEC 200 = ID Kelly IZQUIERDO
       delay(del);                       // Eco
       
       CAN.readMsgBuf(&len, buff);
@@ -377,6 +549,11 @@ void loop(){
           dataToSend[j] = buff[j-5];
         }
         SendMsg();
+
+        //Mostrar en Serial
+            int CurrentReverseSwitchStatus = buff[0];
+            Serial.print("Kelly_IZ");Serial.print("CurrentReverseSwitchStatus");Serial.print(CurrentReverseSwitchStatus);Serial.print("\n");
+            delay(timi);
       }
             
       delay(entremensajes);
@@ -396,6 +573,11 @@ void loop(){
           dataToSend[j] = buff[j-5];
         }
         SendMsg();
+
+        //Mostrar en Serial
+            int CurrentReverseSwitchStatus = buff[0];
+            Serial.print("Kelly_DER");Serial.print("CurrentReverseSwitchStatus");Serial.print(CurrentReverseSwitchStatus);Serial.print("\n");
+            delay(timi);
       }
             
       delay(entremensajes);

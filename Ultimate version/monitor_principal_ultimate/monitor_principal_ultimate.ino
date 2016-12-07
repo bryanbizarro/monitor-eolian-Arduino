@@ -193,11 +193,11 @@ void loop() {
             Serial.print("CAN KELLY NO RECONOCIDO");Serial.print("\n");
           }
           else if (KellyId== 00){          //CCP_A2D_BATCH_READ1 IZQUIERDO
-            int Brake = buff[0]
-            int TPS = buff[1]
-            int OperationVolt = buff[2]
-            int Vs = buff[3]
-            int Bmas = buff[4]
+            int Brake = buff[0];
+            int TPS = buff[1];
+            int OperationVolt = buff[2];
+            int Vs = buff[3];
+            int Bmas = buff[4];
 
             Serial.print("Kelly_IZ");Serial.print("Brake");Serial.print(Brake);Serial.print("\n");
             delay(timi);
