@@ -46,14 +46,16 @@
 
 #define pint1 A0
 #define pint2 A1
-#define timi 1024
-#define maxTimi 4096
+#define timi 256
+#define maxTimi 1200
 #define recvIdKelly1 0xC8
 #define sendIdKelly1 0xD2
 #define recvIdKelly2 0xC9
 #define sendIdKelly2 0xD3
 #define pinRX 10
 #define pinTX 11
+#define radio 0.40
+
 
 SoftwareSerial mySerial(pinRX, pinTX); // RX, TX
 unsigned char dataToSend[13];
@@ -88,6 +90,7 @@ unsigned char COM_SW_BRK[2] = {0x43, 0};        // [0]Current Brake Switch Statu
 unsigned char COM_SW_REV[2] = {0x44, 0};        // [0]Current Reverse switch status
 
 int engineData = 11;
+int RPM[2] = {0,0};
 ////// END KELLY ///////
 
 long lastKelly1Time = 0;
@@ -134,6 +137,11 @@ void SendMsg(){
   for(unsigned char charToSend:dataToSend){
     mySerial.write(charToSend);
   }
+}
+
+double getVelocidad(){
+  double meanRPM = (RPM[0] + RPM[1])/2;
+  return 12*3.141592653*radio*meanRPM/100;
 }
 
 void loop() {
@@ -228,6 +236,7 @@ void loop() {
       
       Serial.print("ENG1_RPM,");Serial.print((buff[0])<<8|buff[1]);Serial.print(" | ");
       Serial.print("ENG1_ERR_CODE,");Serial.print((buff[3])<<8|buff[4]);Serial.print("\n");
+      RPM[0] = (buff[0])<<8|buff[1];
       engineData = 5*10 + engineData%10;
     } else if(engineData/10 == 6){                        // Si el 1er digito de engineData es '3' se procede a leer la temperatura.
 
@@ -285,6 +294,7 @@ void loop() {
       
       Serial.print("ENG2_RPM,");Serial.print((buff[0])<<8|buff[1]);Serial.print(" | ");
       Serial.print("ENG2_ERR_CODE,");Serial.print((buff[3])<<8|buff[4]);Serial.print("\n");
+      RPM[1] = (buff[0])<<8|buff[1];
       engineData = engineData/10*10 + 5;
     } else if(engineData%10 == 6){                        // 2do digito de engineData es 3, lee temperatura.
 
@@ -316,6 +326,8 @@ void loop() {
       
     } 
   }
+
+  Serial.print("Velocidad:  ");Serial.println(getVelocidad());
 
   //// FIN KELLYs ////
 
