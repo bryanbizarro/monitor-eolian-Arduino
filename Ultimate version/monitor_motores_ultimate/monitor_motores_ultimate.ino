@@ -63,6 +63,7 @@ unsigned char COM_SW_REV[2] = {0x44, 0};        // [0]Current Reverse switch sta
 
 // Delay de eco Request/Receive de CAN | Delay entre requests
 int del = 1;
+int timi = 1;
 int entremensajes = 10;
 
 /// Buff RX inicial
@@ -93,7 +94,7 @@ void setup()
 
 START_INIT:
 
-  if (CAN_OK == CAN.begin(CAN_500KBPS)) //Boud de los Kelly
+  if (CAN_OK == CAN.begin(CAN_1000KBPS)) //Boud de los Kelly
   {
     Serial.println("CAN BUS Shield Kelly iniciado!");
     dataToSend[2] = 1; //Referente a Kelly
@@ -123,6 +124,7 @@ void MCP2515_ISR()
 void SendMsg(){
   for(unsigned char charToSend:dataToSend){
     mySerial.write(charToSend);
+    //Serial.println(charToSend);
   }
 }
 
@@ -141,7 +143,24 @@ void loop(){
       
         dataToSend[2] = 1;              // Send KELLY ID 
         dataToSend[3] = 00;             // Primer Digito= Kelly iz/der, Segundo Digito = Cual request
-        
+
+        int Brake = buff[0];
+            int TPS = buff[1];
+            int OperationVolt = buff[2];
+            int Vs = buff[3];
+            int Bmas = buff[4];
+
+            Serial.print("Kelly_IZ");Serial.print("Brake");Serial.print(Brake);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_IZ");Serial.print("TPS");Serial.print(TPS);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_IZ");Serial.print("OperationVolt");Serial.print(OperationVolt);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_IZ");Serial.print("Vs");Serial.print(Vs);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_IZ");Serial.print("Bmas");Serial.print(Bmas);Serial.print("\n");
+            delay(timi);
+            
         for(int j = 5; j < 13; j++){    // Bypass
           dataToSend[j] = buff[j-5];
         }
@@ -160,7 +179,24 @@ void loop(){
       
         dataToSend[2] = 1;              // Send KELLY ID 
         dataToSend[3] = 10;             // Primer Digito= Kelly iz/der, Segundo Digito = Cual request
-        
+
+        int Brake = buff[0];
+            int TPS = buff[1];
+            int OperationVolt = buff[2];
+            int Vs = buff[3];
+            int Bmas = buff[4];
+
+            Serial.print("Kelly_IZ");Serial.print("Brake");Serial.print(Brake);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_IZ");Serial.print("TPS");Serial.print(TPS);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_IZ");Serial.print("OperationVolt");Serial.print(OperationVolt);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_IZ");Serial.print("Vs");Serial.print(Vs);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_IZ");Serial.print("Bmas");Serial.print(Bmas);Serial.print("\n");
+            delay(timi);
+            
         for(int j = 5; j < 13; j++){    // Bypass
           dataToSend[j] = buff[j-5];
         }
@@ -179,7 +215,27 @@ void loop(){
       
         dataToSend[2] = 1;              // Send KELLY ID 
         dataToSend[3] = 01;             // Primer Digito= Kelly iz/der, Segundo Digito = Cual request
-        
+
+        int Ia = buff[0];
+            int Ib = buff[1];
+            int Ic = buff[2];
+            int Va = buff[3];
+            int Vb = buff[4];
+            int Vc = buff[5];
+
+            Serial.print("Kelly_IZ");Serial.print("Ia");Serial.print(Ia);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_IZ");Serial.print("Ib");Serial.print(Ib);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_IZ");Serial.print("Ic");Serial.print(Ic);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_IZ");Serial.print("Va");Serial.print(Va);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_IZ");Serial.print("Vb");Serial.print(Vb);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_IZ");Serial.print("Vc");Serial.print(Vc);Serial.print("\n");
+            delay(timi);
+            
         for(int j = 5; j < 13; j++){    // Bypass
           dataToSend[j] = buff[j-5];
         }
@@ -198,7 +254,27 @@ void loop(){
       
         dataToSend[2] = 1;              // Send KELLY ID 
         dataToSend[3] = 11;             // Primer Digito= Kelly iz/der, Segundo Digito = Cual request
-        
+
+        int Ia = buff[0];
+            int Ib = buff[1];
+            int Ic = buff[2];
+            int Va = buff[3];
+            int Vb = buff[4];
+            int Vc = buff[5];
+
+            Serial.print("Kelly_IZ");Serial.print("Ia");Serial.print(Ia);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_IZ");Serial.print("Ib");Serial.print(Ib);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_IZ");Serial.print("Ic");Serial.print(Ic);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_IZ");Serial.print("Va");Serial.print(Va);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_IZ");Serial.print("Vb");Serial.print(Vb);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_IZ");Serial.print("Vc");Serial.print(Vc);Serial.print("\n");
+            delay(timi);
+            
         for(int j = 5; j < 13; j++){    // Bypass
           dataToSend[j] = buff[j-5];
         }
@@ -217,7 +293,27 @@ void loop(){
       
         dataToSend[2] = 1;              // Send KELLY ID 
         dataToSend[3] = 02;             // Primer Digito= Kelly iz/der, Segundo Digito = Cual request
-        
+
+        int PWM = buff[0];
+            int EnableMotorRotation = buff[1];
+            int MotorTemp = buff[2];
+            int ControllerTemp = buff[3];
+            int HighSideFETMOSTemp = buff[4];
+            int LowSideFETMOSTemp = buff[5];
+
+            Serial.print("Kelly_IZ");Serial.print("PWM");Serial.print(PWM);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_IZ");Serial.print("EnableMotorRotation");Serial.print(EnableMotorRotation);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_IZ");Serial.print("MotorTemp");Serial.print(MotorTemp);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_IZ");Serial.print("ControllerTemp");Serial.print(ControllerTemp);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_IZ");Serial.print("HighSideFETMOSTemp");Serial.print(HighSideFETMOSTemp);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_IZ");Serial.print("LowSideFETMOSTemp");Serial.print(LowSideFETMOSTemp);Serial.print("\n");
+            delay(timi);
+            
         for(int j = 5; j < 13; j++){    // Bypass
           dataToSend[j] = buff[j-5];
         }
@@ -236,7 +332,27 @@ void loop(){
       
         dataToSend[2] = 1;              // Send KELLY ID 
         dataToSend[3] = 12;             // Primer Digito= Kelly iz/der, Segundo Digito = Cual request
-        
+
+        int PWM = buff[0];
+            int EnableMotorRotation = buff[1];
+            int MotorTemp = buff[2];
+            int ControllerTemp = buff[3];
+            int HighSideFETMOSTemp = buff[4];
+            int LowSideFETMOSTemp = buff[5];
+
+            Serial.print("Kelly_IZ");Serial.print("PWM");Serial.print(PWM);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_IZ");Serial.print("EnableMotorRotation");Serial.print(EnableMotorRotation);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_IZ");Serial.print("MotorTemp");Serial.print(MotorTemp);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_IZ");Serial.print("ControllerTemp");Serial.print(ControllerTemp);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_IZ");Serial.print("HighSideFETMOSTemp");Serial.print(HighSideFETMOSTemp);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_IZ");Serial.print("LowSideFETMOSTemp");Serial.print(LowSideFETMOSTemp);Serial.print("\n");
+            delay(timi);
+            
         for(int j = 5; j < 13; j++){    // Bypass
           dataToSend[j] = buff[j-5];
         }
@@ -255,7 +371,21 @@ void loop(){
       
         dataToSend[2] = 1;              // Send KELLY ID 
         dataToSend[3] = 03;             // Primer Digito= Kelly iz/der, Segundo Digito = Cual request
-        
+
+         int RPM = (buff[0])<<8|buff[1];
+            int SomeValue = buff[2];
+            int MSB_ERROR_CODE = buff[3];
+            int LSB_ERROR_CODE;
+
+            Serial.print("Kelly_IZ");Serial.print("RPM");Serial.print(RPM);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_IZ");Serial.print("SomeValue");Serial.print(SomeValue);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_IZ");Serial.print("MSB_ERROR_CODE");Serial.print(MSB_ERROR_CODE);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_IZ");Serial.print("LSB_ERROR_CODE");Serial.print(LSB_ERROR_CODE);Serial.print("\n");
+            delay(timi);
+            
         for(int j = 5; j < 13; j++){    // Bypass
           dataToSend[j] = buff[j-5];
         }
@@ -274,7 +404,21 @@ void loop(){
       
         dataToSend[2] = 1;              // Send KELLY ID 
         dataToSend[3] = 13;             // Primer Digito= Kelly iz/der, Segundo Digito = Cual request
-        
+
+         int RPM = (buff[0])<<8|buff[1];
+            int SomeValue = buff[2];
+            int MSB_ERROR_CODE = buff[3];
+            int LSB_ERROR_CODE;
+
+            Serial.print("Kelly_IZ");Serial.print("RPM");Serial.print(RPM);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_IZ");Serial.print("SomeValue");Serial.print(SomeValue);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_IZ");Serial.print("MSB_ERROR_CODE");Serial.print(MSB_ERROR_CODE);Serial.print("\n");
+            delay(timi);
+            Serial.print("Kelly_IZ");Serial.print("LSB_ERROR_CODE");Serial.print(LSB_ERROR_CODE);Serial.print("\n");
+            delay(timi);
+            
         for(int j = 5; j < 13; j++){    // Bypass
           dataToSend[j] = buff[j-5];
         }
@@ -293,7 +437,11 @@ void loop(){
       
         dataToSend[2] = 1;              // Send KELLY ID 
         dataToSend[3] = 04;             // Primer Digito= Kelly iz/der, Segundo Digito = Cual request
-        
+
+        int CurrentThrottleSwitchStatus = buff[0];
+            Serial.print("Kelly_IZ");Serial.print("CurrentThrottleSwitchStatus");Serial.print(CurrentThrottleSwitchStatus);Serial.print("\n");
+            delay(timi);
+            
         for(int j = 5; j < 13; j++){    // Bypass
           dataToSend[j] = buff[j-5];
         }
@@ -312,7 +460,11 @@ void loop(){
       
         dataToSend[2] = 1;              // Send KELLY ID 
         dataToSend[3] = 14;             // Primer Digito= Kelly iz/der, Segundo Digito = Cual request
-        
+
+        int CurrentThrottleSwitchStatus = buff[0];
+            Serial.print("Kelly_IZ");Serial.print("CurrentThrottleSwitchStatus");Serial.print(CurrentThrottleSwitchStatus);Serial.print("\n");
+            delay(timi);
+            
         for(int j = 5; j < 13; j++){    // Bypass
           dataToSend[j] = buff[j-5];
         }
@@ -331,7 +483,11 @@ void loop(){
       
         dataToSend[2] = 1;              // Send KELLY ID 
         dataToSend[3] = 05;             // Primer Digito= Kelly iz/der, Segundo Digito = Cual request
-        
+
+        int CurrentBrakeSwitchStatus = buff[0];
+            Serial.print("Kelly_IZ");Serial.print("CurrentBrakeSwitchStatus");Serial.print(CurrentBrakeSwitchStatus);Serial.print("\n");
+            delay(timi);
+            
         for(int j = 5; j < 13; j++){    // Bypass
           dataToSend[j] = buff[j-5];
         }
@@ -350,7 +506,11 @@ void loop(){
       
         dataToSend[2] = 1;              // Send KELLY ID 
         dataToSend[3] = 15;             // Primer Digito= Kelly iz/der, Segundo Digito = Cual request
-        
+
+        int CurrentBrakeSwitchStatus = buff[0];
+            Serial.print("Kelly_IZ");Serial.print("CurrentBrakeSwitchStatus");Serial.print(CurrentBrakeSwitchStatus);Serial.print("\n");
+            delay(timi);
+            
         for(int j = 5; j < 13; j++){    // Bypass
           dataToSend[j] = buff[j-5];
         }
@@ -369,7 +529,11 @@ void loop(){
       
         dataToSend[2] = 1;              // Send KELLY ID 
         dataToSend[3] = 06;             // Primer Digito= Kelly iz/der, Segundo Digito = Cual request
-        
+
+        int CurrentReverseSwitchStatus = buff[0];
+            Serial.print("Kelly_IZ");Serial.print("CurrentReverseSwitchStatus");Serial.print(CurrentReverseSwitchStatus);Serial.print("\n");
+            delay(timi);
+            
         for(int j = 5; j < 13; j++){    // Bypass
           dataToSend[j] = buff[j-5];
         }
@@ -388,7 +552,11 @@ void loop(){
       
         dataToSend[2] = 1;              // Send KELLY ID 
         dataToSend[3] = 16;             // Primer Digito= Kelly iz/der, Segundo Digito = Cual request
-        
+
+        int CurrentReverseSwitchStatus = buff[0];
+            Serial.print("Kelly_IZ");Serial.print("CurrentReverseSwitchStatus");Serial.print(CurrentReverseSwitchStatus);Serial.print("\n");
+            delay(timi);
+            
         for(int j = 5; j < 13; j++){    // Bypass
           dataToSend[j] = buff[j-5];
         }

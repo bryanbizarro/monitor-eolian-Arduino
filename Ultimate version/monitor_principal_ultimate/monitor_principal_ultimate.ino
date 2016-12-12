@@ -55,8 +55,10 @@ int KellyId;
 
 char inChar;
 char inData[13];
+unsigned char buff[7];
 int charsRead = 0;
 int index=0;
+int index1=0;
 
 
 // MPPTs vars
@@ -79,7 +81,7 @@ void setup() {
 
 void loop() {
 
-  bool read2Serial(){
+  
   while(SerialKelly.available() || (charsRead < 14)){  //Revisar si es necesario un timeout
     //Serial.println("SerialIsAvailable");
     if(index < 14){
@@ -109,7 +111,7 @@ void loop() {
           
           for(int j = 5;j<13;j++){    // Sin byte [13] = 255
             buff[index1] = inData[j];
-            index1++
+            index1++;
           }
 
           if (MPPTId == 30){
@@ -184,7 +186,7 @@ void loop() {
           index1 = 0;
           for(int j = 5;j<13;j++){    // Sin byte [13] = 255
             buff[index1] = inData[j];
-            index1++
+            index1++;
           }
           if (KellyId== 30){
             Serial.print("CAN KELLY RECONOCIDO");Serial.print("\n");
@@ -193,11 +195,11 @@ void loop() {
             Serial.print("CAN KELLY NO RECONOCIDO");Serial.print("\n");
           }
           else if (KellyId== 00){          //CCP_A2D_BATCH_READ1 IZQUIERDO
-            int Brake = buff[0]
-            int TPS = buff[1]
-            int OperationVolt = buff[2]
-            int Vs = buff[3]
-            int Bmas = buff[4]
+            int Brake = buff[0];
+            int TPS = buff[1];
+            int OperationVolt = buff[2];
+            int Vs = buff[3];
+            int Bmas = buff[4];
 
             Serial.print("Kelly_IZ");Serial.print("Brake");Serial.print(Brake);Serial.print("\n");
             delay(timi);
@@ -211,11 +213,11 @@ void loop() {
             delay(timi);
           }
           else if (KellyId== 10){          //CCP_A2D_BATCH_READ1 DERECHO
-            int Brake = buff[0]
-            int TPS = buff[1]
-            int OperationVolt = buff[2]
-            int Vs = buff[3]
-            int Bmas = buff[4]
+            int Brake = buff[0];
+            int TPS = buff[1];
+            int OperationVolt = buff[2];
+            int Vs = buff[3];
+            int Bmas = buff[4];
 
             Serial.print("Kelly_DER");Serial.print("Brake");Serial.print(Brake);Serial.print("\n");
             delay(timi);
@@ -229,12 +231,12 @@ void loop() {
             delay(timi);
           }
           else if (KellyId== 01){          //CCP_A2D_BATCH_READ2 IZQUIERDO
-            int Ia = buff[0]
-            int Ib = buff[1]
-            int Ic = buff[2]
-            int Va = buff[3]
-            int Vb = buff[4]
-            int Vc = buff[5]
+            int Ia = buff[0];
+            int Ib = buff[1];
+            int Ic = buff[2];
+            int Va = buff[3];
+            int Vb = buff[4];
+            int Vc = buff[5];
 
             Serial.print("Kelly_IZ");Serial.print("Ia");Serial.print(Ia);Serial.print("\n");
             delay(timi);
@@ -250,12 +252,12 @@ void loop() {
             delay(timi);
           }
           else if (KellyId== 11){          //CCP_A2D_BATCH_READ2 DERECHO
-            int Ia = buff[0]
-            int Ib = buff[1]
-            int Ic = buff[2]
-            int Va = buff[3]
-            int Vb = buff[4]
-            int Vc = buff[5]
+            int Ia = buff[0];
+            int Ib = buff[1];
+            int Ic = buff[2];
+            int Va = buff[3];
+            int Vb = buff[4];
+            int Vc = buff[5];
 
             Serial.print("Kelly_DER");Serial.print("Ia");Serial.print(Ia);Serial.print("\n");
             delay(timi);
@@ -271,12 +273,12 @@ void loop() {
             delay(timi);
           }
           else if (KellyId== 02){          //CCP_MONITOR1 IZQUIERDO
-            int PWM = buff[0]
-            int EnableMotorRotation = buff[1]
-            int MotorTemp = buff[2]
-            int ControllerTemp = buff[3]
-            int HighSideFETMOSTemp = buff[4]
-            int LowSideFETMOSTemp = buff[5]
+            int PWM = buff[0];
+            int EnableMotorRotation = buff[1];
+            int MotorTemp = buff[2];
+            int ControllerTemp = buff[3];
+            int HighSideFETMOSTemp = buff[4];
+            int LowSideFETMOSTemp = buff[5];
 
             Serial.print("Kelly_IZ");Serial.print("PWM");Serial.print(PWM);Serial.print("\n");
             delay(timi);
@@ -292,12 +294,12 @@ void loop() {
             delay(timi);
           }
           else if (KellyId== 12){          //CCP_MONITOR1 DERECHO
-            int PWM = buff[0]
-            int EnableMotorRotation = buff[1]
-            int MotorTemp = buff[2]
-            int ControllerTemp = buff[3]
-            int HighSideFETMOSTemp = buff[4]
-            int LowSideFETMOSTemp = buff[5]
+            int PWM = buff[0];
+            int EnableMotorRotation = buff[1];
+            int MotorTemp = buff[2];
+            int ControllerTemp = buff[3];
+            int HighSideFETMOSTemp = buff[4];
+            int LowSideFETMOSTemp = buff[5];
 
             Serial.print("Kelly_DER");Serial.print("PWM");Serial.print(PWM);Serial.print("\n");
             delay(timi);
@@ -313,10 +315,10 @@ void loop() {
             delay(timi);
           }
           else if (KellyId== 03){          //CCP_MONITOR2 IZQUIERDO
-            int RPM = (buff[0])<<8|buff[1]
-            int SomeValue = buff[2]
-            int MSB_ERROR_CODE = buff[3]
-            int LSB_ERROR_CODE
+            int RPM = (buff[0])<<8|buff[1];
+            int SomeValue = buff[2];
+            int MSB_ERROR_CODE = buff[3];
+            int LSB_ERROR_CODE;
 
             Serial.print("Kelly_IZ");Serial.print("RPM");Serial.print(RPM);Serial.print("\n");
             delay(timi);
@@ -328,10 +330,10 @@ void loop() {
             delay(timi);
           }
           else if (KellyId== 13){          //CCP_MONITOR2 DERECHO
-            int RPM = (buff[0])<<8|buff[1]
-            int SomeValue = buff[2]
-            int MSB_ERROR_CODE = buff[3]
-            int LSB_ERROR_CODE
+            int RPM = (buff[0])<<8|buff[1];
+            int SomeValue = buff[2];
+            int MSB_ERROR_CODE = buff[3];
+            int LSB_ERROR_CODE;
 
             Serial.print("Kelly_DER");Serial.print("RPM");Serial.print(RPM);Serial.print("\n");
             delay(timi);
@@ -343,32 +345,32 @@ void loop() {
             delay(timi);
           }
           else if (KellyId== 04){          //CCP_COM_SW_ACC IZQUIERDO
-            int CurrentThrottleSwitchStatus = buff[0]
+            int CurrentThrottleSwitchStatus = buff[0];
             Serial.print("Kelly_IZ");Serial.print("CurrentThrottleSwitchStatus");Serial.print(CurrentThrottleSwitchStatus);Serial.print("\n");
             delay(timi);
           }
           else if (KellyId== 14){          //CCP_COM_SW_ACC DERECHO
-            int CurrentThrottleSwitchStatus = buff[0]
+            int CurrentThrottleSwitchStatus = buff[0];
             Serial.print("Kelly_DER");Serial.print("CurrentThrottleSwitchStatus");Serial.print(CurrentThrottleSwitchStatus);Serial.print("\n");
             delay(timi);
           }
           else if (KellyId== 05){          //COM_SW_BRK IZQUIERDO
-            int CurrentBrakeSwitchStatus = buff[0]
+            int CurrentBrakeSwitchStatus = buff[0];
             Serial.print("Kelly_IZ");Serial.print("CurrentBrakeSwitchStatus");Serial.print(CurrentBrakeSwitchStatus);Serial.print("\n");
             delay(timi);
           }
           else if (KellyId== 15){          //COM_SW_BRK DERECHO
-            int CurrentThrottleSwitchStatus = buff[0]
+            int CurrentBrakeSwitchStatus = buff[0];
             Serial.print("Kelly_DER");Serial.print("CurrentBrakeSwitchStatus");Serial.print(CurrentBrakeSwitchStatus);Serial.print("\n");
             delay(timi);
           }
           else if (KellyId== 06){          //COM_SW_REV IZQUIERDO
-            int CurrentReverseSwitchStatus = buff[0]
+            int CurrentReverseSwitchStatus = buff[0];
             Serial.print("Kelly_IZ");Serial.print("CurrentReverseSwitchStatus");Serial.print(CurrentReverseSwitchStatus);Serial.print("\n");
             delay(timi);
           }
           else if (KellyId== 16){          //COM_SW_REV DERECHO
-            int CurrentReverseSwitchStatus = buff[0]
+            int CurrentReverseSwitchStatus = buff[0];
             Serial.print("Kelly_DER");Serial.print("CurrentReverseSwitchStatus");Serial.print(CurrentReverseSwitchStatus);Serial.print("\n");
             delay(timi);
             
@@ -383,8 +385,10 @@ void loop() {
         }
         index -= 1;
       }
-    }
+    } //SI LEE BIEN LOS 255
     charsRead++;
   }
-}
+  }
+  
+// Fin Loop
 }
