@@ -360,7 +360,11 @@ void loop() {
             delay(timi);
           }
           else if (KellyId== 15){          //COM_SW_BRK DERECHO
+<<<<<<< HEAD
             int CurrentBrakeSwitchStatus = buff[0];
+=======
+            int CurrentThrottleSwitchStatus = buff[0];
+>>>>>>> origin/master
             Serial.print("Kelly_DER");Serial.print("CurrentBrakeSwitchStatus");Serial.print(CurrentBrakeSwitchStatus);Serial.print("\n");
             delay(timi);
           }
