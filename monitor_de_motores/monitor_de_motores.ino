@@ -56,6 +56,7 @@
 #define pinRX 10
 #define pinTX 11
 #define radio 0.550
+#define pi 3.141592653
 
 SoftwareSerial mySerial(pinRX, pinTX); // RX, TX
 unsigned char dataToSend[13];
@@ -90,6 +91,7 @@ unsigned char COM_SW_BRK[2] = {0x43, 0};        // [0]Current Brake Switch Statu
 unsigned char COM_SW_REV[2] = {0x44, 0};        // [0]Current Reverse switch status
 
 int engineData = 11;
+byte engData[2] = {1,1}; 
 int RPM[2] = {0,0};
 ////// END KELLY ///////
 
@@ -142,7 +144,7 @@ void SendMsg(){
 
 double getVelocidad(){
   double meanRPM = (RPM[0] + RPM[1])/2;
-  return 12*3.141592653*radio*meanRPM/100;
+  return 6*3.141592653*radio*meanRPM;
 }
 
 void loop() {
@@ -348,7 +350,7 @@ void loop() {
   //// FIN REQUEST ////
 
   if(millis() - lastVelocityTime > tiempoVelocidad){
-    Serial.print("VELOCIDAD,");Serial.println(getVelocidad()*100,0);
+    Serial.print("VELOCIDAD,");Serial.println(getVelocidad());
     lastVelocityTime = millis();
   }
   
