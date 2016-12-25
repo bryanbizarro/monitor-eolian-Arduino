@@ -43,10 +43,10 @@ bool motores = true;
 
 #include <mcp_can.h>
 #include <SPI.h>
-#include <SoftwareSerial.h>
 
 #define pint1 A0
 #define pint2 A1
+#define bmstimi 0
 #define timi 256
 #define maxTimi 1200
 #define tiempoVelocidad 1000
@@ -63,8 +63,6 @@ bool motores = true;
 
 int rx = 10;
 int tx = 11;
-
-SoftwareSerial mySerial(rx, tx); 
 
 //  END SOFTWARE SERIAL
 
@@ -115,6 +113,7 @@ unsigned int Uin, Iin, Uout;
 long lastKelly1Time = 0;
 long lastKelly2Time = 0;
 long lastMpptTime = 0;
+long lastVoltageTime = 0;
 
 
 
@@ -125,8 +124,7 @@ MCP_CAN CAN(SPI_CS_PIN);                                    // Set CS pin
 
 void setup()
 {
-  mySerial.begin(9600);
-  Serial.begin(57600);
+  Serial.begin(250000);
 
 START_INIT:
 
@@ -155,75 +153,75 @@ void MCP2515_ISR()
 }
 
 
-bool read2Serial(){
-  while(mySerial.available() || (charsRead < 13)){  //Revisar si es necesario un timeout
-    //Serial.println("SerialIsAvailable");
-    if(index < 12){
-      //Serial.print(index);Serial.println(" < 13");
-      inChar = mySerial.read();
-      inData[index] = inChar;
-      index++;
-      //Serial.print("inChar: ");Serial.println(inChar);
-    } else {
-      inChar = mySerial.read();
-      inData[index] = inChar;
-      index++;
-      //Serial.print("inChar: ");Serial.println(inChar);
-      //Serial.println("buff full");
-      //Serial.print(inData[0]);Serial.print(inData[1]);Serial.print(inData[2]);Serial.print(inData[3]);
-      //Serial.print(inData[4]);Serial.print(inData[5]);Serial.print(inData[6]);Serial.print(inData[7]);
-      //Serial.print(inData[8]);Serial.print(inData[9]);Serial.print(inData[10]);Serial.print(inData[11]);
-      //Serial.println(inData[12]);
-      if((inData[0] == 255) && (inData[1] == 255) && (inData[4] == 255) && (inData[13] == 255)){
-        //Serial.println("data ok");
-        if(inData[2] == 0){  //REVISAR que igualdad se cumpla!!!
-          MPPTId = inData[3];
-          index = 0;
-          for(int j = 5;j<13;j++){
-            buff[index] = inData[j];
-          }
-          int MPPT_TEMP  = buff[6];
-          int  Uin  = ((bitRead(buff[0],1)<<1|bitRead(buff[0],0))<<8)|buff[1];
-          int  Iin  = ((bitRead(buff[2],1)<<1|bitRead(buff[2],0))<<8)|buff[3];
-          int Uout  = ((bitRead(buff[4],1)<<1|bitRead(buff[4],0))<<8)|buff[5];
-          int BVLR = (bitRead(buff[0],7));
-          int OVT  = (bitRead(buff[0],6));
-          int NOC  = (bitRead(buff[0],5));
-          int UNDV = (bitRead(buff[0],4));
-  
-          Serial.print("MPPT");Serial.print(MPPTId);Serial.print("_BVLR,");Serial.print(BVLR);Serial.print("\n");
-          delay(timi);
-          Serial.print("MPPT");Serial.print(MPPTId);Serial.print("_OVT,");Serial.print(OVT);Serial.print("\n");
-          delay(timi);
-          Serial.print("MPPT");Serial.print(MPPTId);Serial.print("_NOC,");Serial.print(NOC);Serial.print("\n");
-          delay(timi);
-          Serial.print("MPPT");Serial.print(MPPTId);Serial.print("_UNDV,");Serial.print(UNDV);Serial.print("\n");
-          delay(timi);
-          Serial.print("MPPT");Serial.print(MPPTId);Serial.print("_TEMP,");Serial.print(MPPT_TEMP);Serial.print("\n");
-          delay(timi);
-          Serial.print("MPPT");Serial.print(MPPTId);Serial.print("_UIN,");Serial.print(Uin);Serial.print("\n");
-          delay(timi);
-          Serial.print("MPPT");Serial.print(MPPTId);Serial.print("_IIN,");Serial.print(Iin);Serial.print("\n");
-          delay(timi);
-          Serial.print("MPPT");Serial.print(MPPTId);Serial.print("_UOUT");Serial.print(Uout);Serial.print("\n");
-          delay(timi);
-        } else if (inData[2] == 2){
-          Serial.print("ARDUINO2_ERROR");
-        } else if (inData[2] == 1){
-          Serial.print("ARDUINO_ReadyPapi!");
-        } else {
-          Serial.print("BIT_ERROR_READERROR");
-        }
-      } else {
-        for(int j = 1; j<13;j++){
-          inData[j-1] = inData[j];
-        }
-        index -= 1;
-      }
-    }
-    charsRead++;
-  }
-}
+//bool read2Serial(){
+//  while(mySerial.available() || (charsRead < 13)){  //Revisar si es necesario un timeout
+//    //Serial.println("SerialIsAvailable");
+//    if(index < 12){
+//      //Serial.print(index);Serial.println(" < 13");
+//      inChar = mySerial.read();
+//      inData[index] = inChar;
+//      index++;
+//      //Serial.print("inChar: ");Serial.println(inChar);
+//    } else {
+//      inChar = mySerial.read();
+//      inData[index] = inChar;
+//      index++;
+//      //Serial.print("inChar: ");Serial.println(inChar);
+//      //Serial.println("buff full");
+//      //Serial.print(inData[0]);Serial.print(inData[1]);Serial.print(inData[2]);Serial.print(inData[3]);
+//      //Serial.print(inData[4]);Serial.print(inData[5]);Serial.print(inData[6]);Serial.print(inData[7]);
+//      //Serial.print(inData[8]);Serial.print(inData[9]);Serial.print(inData[10]);Serial.print(inData[11]);
+//      //Serial.println(inData[12]);
+//      if((inData[0] == 255) && (inData[1] == 255) && (inData[4] == 255) && (inData[13] == 255)){
+//        //Serial.println("data ok");
+//        if(inData[2] == 0){  //REVISAR que igualdad se cumpla!!!
+//          MPPTId = inData[3];
+//          index = 0;
+//          for(int j = 5;j<13;j++){
+//            buff[index] = inData[j];
+//          }
+//          int MPPT_TEMP  = buff[6];
+//          int  Uin  = ((bitRead(buff[0],1)<<1|bitRead(buff[0],0))<<8)|buff[1];
+//          int  Iin  = ((bitRead(buff[2],1)<<1|bitRead(buff[2],0))<<8)|buff[3];
+//          int Uout  = ((bitRead(buff[4],1)<<1|bitRead(buff[4],0))<<8)|buff[5];
+//          int BVLR = (bitRead(buff[0],7));
+//          int OVT  = (bitRead(buff[0],6));
+//          int NOC  = (bitRead(buff[0],5));
+//          int UNDV = (bitRead(buff[0],4));
+//  
+//          Serial.print("MPPT");Serial.print(MPPTId);Serial.print("_BVLR,");Serial.print(BVLR);Serial.print("\n");
+//          delay(bmstimi);
+//          Serial.print("MPPT");Serial.print(MPPTId);Serial.print("_OVT,");Serial.print(OVT);Serial.print("\n");
+//          delay(bmstimi);
+//          Serial.print("MPPT");Serial.print(MPPTId);Serial.print("_NOC,");Serial.print(NOC);Serial.print("\n");
+//          delay(bmstimi);
+//          Serial.print("MPPT");Serial.print(MPPTId);Serial.print("_UNDV,");Serial.print(UNDV);Serial.print("\n");
+//          delay(bmstimi);
+//          Serial.print("MPPT");Serial.print(MPPTId);Serial.print("_TEMP,");Serial.print(MPPT_TEMP);Serial.print("\n");
+//          delay(bmstimi);
+//          Serial.print("MPPT");Serial.print(MPPTId);Serial.print("_UIN,");Serial.print(Uin);Serial.print("\n");
+//          delay(bmstimi);
+//          Serial.print("MPPT");Serial.print(MPPTId);Serial.print("_IIN,");Serial.print(Iin);Serial.print("\n");
+//          delay(bmstimi);
+//          Serial.print("MPPT");Serial.print(MPPTId);Serial.print("_UOUT");Serial.print(Uout);Serial.print("\n");
+//          delay(bmstimi);
+//        } else if (inData[2] == 2){
+//          Serial.print("ARDUINO2_ERROR");
+//        } else if (inData[2] == 1){
+//          Serial.print("ARDUINO_ReadyPapi!");
+//        } else {
+//          Serial.print("BIT_ERROR_READERROR");
+//        }
+//      } else {
+//        for(int j = 1; j<13;j++){
+//          inData[j-1] = inData[j];
+//        }
+//        index -= 1;
+//      }
+//    }
+//    charsRead++;
+//  }
+//}
 
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -295,13 +293,13 @@ void loop(){
 
 /*////////////////////   FIN REQUEST KELLYS   ////////////////////*/
 
-  
+  if(CAN.checkReceive()){
   CAN.readMsgBuf(&len, buff);
   unsigned long canId = CAN.getCanId();
 
 /*////////////////////   LECTURA DE DATOS DE BMS   ////////////////////*/
   
-  if (canId == 0x036) // Lectura de Voltajes en tiempo real (solo con veloc de CAN BUS mayor a 256)
+  if (canId == 0x036 && (millis() - lastVoltageTime > 15)) // Lectura de Voltajes en tiempo real (solo con veloc de CAN BUS mayor a 256)
   
   {
       int cellID = (buff[0]);
@@ -312,7 +310,8 @@ void loop(){
       int openVolt =  (buff[5]<<8)|buff[6];
 
       Serial.print("CELL_INSTVTG,");Serial.print(cellID);Serial.print(",");Serial.print(instVolt);Serial.print("\n");
-      delay(timi);
+      delay(bmstimi);
+      lastVoltageTime = millis();
   }
 
   else if (canId == 0x081) // Lectura de temperaturas
@@ -321,9 +320,20 @@ void loop(){
       int thermistorID = (buff[0]);
       int temperature = (buff[1]);
       
-      Serial.print("TEMP,");Serial.print(thermistorID);Serial.print(",");Serial.print(temperature);Serial.print("\n");
-      delay(timi);
+      Serial.print("TEMP,");Serial.print(thermistorID);Serial.print(",");Serial.print(temperature);Serial.print("  81");Serial.print("\n");
+      delay(bmstimi);
   }
+
+//   else if (canId == 0x082) // Lectura de temperaturas
+//  
+//  {
+//      int thermistorID = (buff[1]);
+//      int temperature = (buff[2]);
+//      
+//      Serial.print("TEMP,");Serial.print(thermistorID);Serial.print(",");Serial.print(temperature);Serial.print("  82");Serial.print("\n");
+//      delay(bmstimi);
+//  }
+  
   else if( canId == 0x100)
   {
       //int packSOC         = buff[0];
@@ -332,13 +342,13 @@ void loop(){
       //int packOpenVolt    = (buff[5]<<8)|buff[6];
 
       Serial.print("PACK_SOC,");Serial.print(buff[0]);Serial.print("\n");
-      delay(timi);
+      delay(bmstimi);
       Serial.print("PACK_CURRENT,");Serial.print((buff[1]<<8)|buff[2]);Serial.print("\n");
-      delay(timi);
+      delay(bmstimi);
       Serial.print("PACK_INST_VTG,");Serial.print((buff[3]<<8)|buff[4]);Serial.print("\n");
-      delay(timi);
+      delay(bmstimi);
       Serial.print("PACK_OPEN_VTG,");Serial.print((buff[5]<<8)|buff[6]);Serial.print("\n");
-      delay(timi);
+      delay(bmstimi);
 
   }
   else if( canId == 0x101)
@@ -348,11 +358,11 @@ void loop(){
       unsigned int minimumPackVolt = (buff[4]<<8)|buff[5];
 
       Serial.print("PACK_ABSCURRENT,");Serial.print(packAbsCurrent);Serial.print("\n");
-      delay(timi);
+      delay(bmstimi);
       Serial.print("MAXIM_PACK_VTG,");Serial.print(maximumPackVolt);Serial.print("\n");
-      delay(timi);
+      delay(bmstimi);
       Serial.print("MINIM_PACK_VTG,");Serial.print(minimumPackVolt);Serial.print("\n");
-      delay(timi);
+      delay(bmstimi);
   }
   else if( canId == 0x102)
   {
@@ -364,17 +374,17 @@ void loop(){
       int internalTemp      = buff[5];
       
       Serial.print("HIGH_TEMP,");Serial.print(highTemperature);Serial.print("\n");
-      delay(timi);
+      delay(bmstimi);
       Serial.print("LOW_TEMP,");Serial.print(lowTemperature);Serial.print("\n");
-      delay(timi);
+      delay(bmstimi);
       Serial.print("HIGH_TID,");Serial.print(highThermistorID);Serial.print("\n");
-      delay(timi);
+      delay(bmstimi);
       Serial.print("LOW_TID,");Serial.print(lowThermistorID);Serial.print("\n");
-      delay(timi);
+      delay(bmstimi);
       Serial.print("AVG_TEMP,");Serial.print(avgTemp);Serial.print("\n");
-      delay(timi);
+      delay(bmstimi);
       Serial.print("INT_TEMP,");Serial.print(internalTemp);Serial.print("\n");
-      delay(timi);
+      delay(bmstimi);
   }
     
 /*////////////////////   FIN BMS   ////////////////////*/
@@ -456,6 +466,7 @@ void loop(){
       engineData = engineData/10*10 + 1;
       
     } 
+  }
   }
 
 /*////////////////////   FIN KELLYS   ////////////////////*/

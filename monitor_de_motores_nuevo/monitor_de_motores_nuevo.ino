@@ -8,33 +8,23 @@
  /*  PROTOCOLO DE ENVÍO: 12 bytes
  *  Bytes
  *  ╔  ╗
- *  ║00║ || 255 - FIJO COMO PROTOCOLO ||
+ *  ║00║ || ID DATO (Motor) ||
  *  ╠  ╣
- *  ║01║ || 255 - FIJO COMO PROTOCOLO ||
+ *  ║01║ || TIPO DE DATO ||
  *  ╠  ╣
- *  ║02║ Reservados para ID de MOTORES. Valores:1     ,0 para MPPT, 1 para MOTORES, 2 para BMS
+ *  ║02║ CAN BUFF[0]
  *  ╠  ╣
- *  ║03║ Reservados para ID de MOTORES. Valores:0,1
+ *  ║03║ CAN BUFF[1]
  *  ╠  ╣
- *  ║04║ || 255 - FIJO COMO PROTOCOLO ||
+ *  ║04║ CAN BUFF[2]
  *  ╠  ╣
- *  ║05║ CAN BUFF[0]
+ *  ║05║ CAN BUFF[3]
  *  ╠  ╣
- *  ║06║ CAN BUFF[1]
+ *  ║06║ CAN BUFF[4]
  *  ╠  ╣
- *  ║07║ CAN BUFF[2]
+ *  ║07║ CAN BUFF[5]
  *  ╠  ╣
- *  ║08║ CAN BUFF[3]
- *  ╠  ╣
- *  ║09║ CAN BUFF[4]
- *  ╠  ╣
- *  ║10║ CAN BUFF[5]
- *  ╠  ╣
- *  ║11║ CAN BUFF[6]
- *  ╠  ╣
- *  ║12║ CAN BUFF[7]
- *  ╠  ╣
- *  ║13║ || 255 - FIJO COMO PROTOCOLO ||
+ *  ║08║ CAN BUFF[6]
  *  ╚  ╝
  */
 
@@ -42,6 +32,7 @@
  
 #include <mcp_can.h>
 #include <SPI.h>
+#include <SoftEasyTransfer.h>
 #include <SoftwareSerial.h>
 
 #define pint1 A0
@@ -53,13 +44,22 @@
 #define sendIdKelly1 0xD2
 #define recvIdKelly2 0xC9
 #define sendIdKelly2 0xD3
-#define pinRX 10
-#define pinTX 11
+#define pinRX 7
+#define pinTX 8
 #define radio 0.550
 #define pi 3.141592653
 
 SoftwareSerial mySerial(pinRX, pinTX); // RX, TX
-unsigned char dataToSend[13];
+SoftEasyTransfer ET; 
+
+struct SEND_DATA_STRUCTURE{
+  //put your variable definitions here for the data you want to send
+  //THIS MUST BE EXACTLY THE SAME ON THE OTHER ARDUINO
+  unsigned char buff[8];
+};
+
+//give a name to the group of data
+SEND_DATA_STRUCTURE mydata;
 
 /* ////////// VARIABLES CAN SHIELD ////////// */
 
@@ -91,7 +91,9 @@ unsigned char COM_SW_BRK[2] = {0x43, 0};        // [0]Current Brake Switch Statu
 unsigned char COM_SW_REV[2] = {0x44, 0};        // [0]Current Reverse switch status
 
 int engineData = 11;
-byte engData[2] = {B10000001,B10000001}; 
+unsigned char engData[2] = {B10000001,B10000001}; 
+
+
 int RPM[2] = {0,0};
 ////// END KELLY ///////
 
@@ -103,23 +105,32 @@ MCP_CAN CAN(SPI_CS_PIN);
 
 void setup() {
   
-  Serial.begin(57600);
+  Serial.begin(115200);
   mySerial.begin(115200);
-  dataToSend[0]   = 255; //Header
-  dataToSend[1]   = 255; //Header
-  dataToSend[4]   = 255; //Middle
-  dataToSend[12]  = 255; //END
 
+  ET.begin(details(mydata), &mySerial);
+  
+  
 START_INIT:
 
   if (CAN_OK == CAN.begin(CAN_1000KBPS))                    // Inicia CAN BUS con baudrate de 1000 kbps
   {
     Serial.println("CAN BUS Shield MOTORRES iniciado!");
+    mydata.buff[0] = 65;
+    mydata.buff[1] = 70;
+    Serial.write(mydata.buff,8);Serial.print("\n");
+    ET.sendData();
+    ET.sendData();
+    ET.sendData();
   }
   else
   {
     Serial.println("Falla de inicio CAN BUS Shield MOTORES");
     Serial.println("Reiniciando CAN BUS Shield MOTORES");
+    mydata.buff[0] = 65;
+    mydata.buff[1] = 75;
+    Serial.write(mydata.buff,8);Serial.print("\n");
+    ET.sendData();
     delay(100);
     goto START_INIT;
   }
@@ -135,11 +146,6 @@ void MCP2515_ISR()
   flagRecv = 1;
 }
 
-void SendMsg(){
-  for(unsigned char charToSend:dataToSend){
-    mySerial.write(charToSend);
-  }
-}
 
 double getVelocidad(){
   double meanRPM = (RPM[0] + RPM[1])/2;
@@ -158,45 +164,49 @@ void loop() {
 
   //// FIN GAP ////
 
+//    Serial.print("| Kelly1: ");Serial.print(millis() - lastKelly1Time);
+//    Serial.print(" |  | Kelly2: ");Serial.print(millis() - lastKelly2Time);
+//    Serial.print(" |  | engData: ");Serial.print(engData[0],BIN);Serial.print(" | ");Serial.println(engData[1],BIN);
+
   if(millis() - lastKelly1Time > maxTimi){
-    engData[0] = 1;
+    engData[0] = B10000001;
     lastKelly1Time = millis();
   }
   if(millis() - lastKelly2Time > maxTimi){
-    engData[1] = 1; 
-    lastKelly1Time = millis();
+    engData[1] = B10000001; 
+    lastKelly2Time = millis();
   }
-  //Serial.print("kelly1 ");Serial.print(millis() - lastKelly1Time);Serial.print("  kelly2 ");Serial.print(millis() - lastKelly2Time);Serial.print("  engineData ");Serial.println(engineData);
   
-  if(((millis() - lastKelly1Time) > timi) && bitRead(engData[0],8)){
-    if((1111111&engData[0]) == 1){
+  
+  if(((millis() - lastKelly1Time) > timi) && bitRead(engData[0],7)){
+    if((B1111111&engData[0]) == 1){
       CAN.sendMsgBuf(recvIdKelly1, 0, 1, CCP_A2D_BATCH_READ2);
-    } else if ((1111111&engData[0]) == 2){
+    } else if ((B1111111&engData[0]) == 2){
       CAN.sendMsgBuf(recvIdKelly1, 0, 1, CPP_MONITOR2);
-    } else if ((1111111&engData[0]) == 3){
+    } else if ((B1111111&engData[0]) == 3){
       CAN.sendMsgBuf(recvIdKelly1, 0, 1, CPP_MONITOR1);
-    } else if (((1111111&engData[0]) == 4) && (revMode == true)){
+    } else if (((B1111111&engData[0]) == 4) && (revMode == true)){
       CAN.sendMsgBuf(recvIdKelly1, 0, 2, COM_SW_ACC);
-    } else if (((1111111&engData[0]) == 5) && (revMode == true)){
+    } else if (((B1111111&engData[0]) == 5) && (revMode == true)){
       CAN.sendMsgBuf(recvIdKelly1, 0, 2, COM_SW_REV);
     }
-    bitWrite(engData[0],8,0);
+    bitWrite(engData[0],7,0);
     lastKelly1Time = millis();
   }
 
-  if(((millis() - lastKelly2Time) > timi) && bitRead(engData[1],8)){
-    if((1111111&engData[1]) == 1){
+  if(((millis() - lastKelly2Time) > timi) && bitRead(engData[1],7)){
+    if((B1111111&engData[1]) == 1){
       CAN.sendMsgBuf(recvIdKelly2, 0, 1, CCP_A2D_BATCH_READ2);
-    } else if ((1111111&engData[1]) == 2){
+    } else if ((B1111111&engData[1]) == 2){
       CAN.sendMsgBuf(recvIdKelly2, 0, 1, CPP_MONITOR2);
-    } else if ((1111111&engData[1]) == 3){
+    } else if ((B1111111&engData[1]) == 3){
       CAN.sendMsgBuf(recvIdKelly2, 0, 1, CPP_MONITOR1);
-    } else if (((1111111&engData[1]) == 4) && (revMode == true)){
+    } else if (((B1111111&engData[1]) == 4) && (revMode == true)){
       CAN.sendMsgBuf(recvIdKelly2, 0, 2, COM_SW_ACC);
-    } else if (((1111111&engData[1]) == 5) && (revMode == true)){
+    } else if (((B1111111&engData[1]) == 5) && (revMode == true)){
       CAN.sendMsgBuf(recvIdKelly2, 0, 2, COM_SW_REV);
     }
-    bitWrite(engData[1],8,0);
+    bitWrite(engData[1],7,0);
     lastKelly2Time = millis();
   }
 
@@ -207,14 +217,15 @@ void loop() {
   CAN.readMsgBuf(&len, buff);
   canId = CAN.getCanId();
   
-  if((canId == sendIdKelly1) && !bitRead(engData[0],8)){
-    if((1111111&engData[0]) == 1){         
-      dataToSend[2] = 1;
-      dataToSend[3] = 01;
-      for(int j = 5; j < 12; j++){
-        dataToSend[j] = buff[j-5];
+  if((canId == sendIdKelly1) && !bitRead(engData[0],7)){
+    //Serial.print(sendIdKelly1);
+    mydata.buff[0] = sendIdKelly1;
+    if((B1111111&engData[0]) == 1){ 
+      
+      mydata.buff[1] = 1;        
+      for(int j = 0; j < 6; j++){
+        mydata.buff[j+2] = buff[j];
       }
-      SendMsg();
       Serial.print("I1_A,");Serial.print(buff[0]);Serial.print(" | ");
       Serial.print("I1_B,");Serial.print(buff[1]);Serial.print(" | ");
       Serial.print("I1_C,");Serial.print(buff[2]);Serial.print(" | ");
@@ -222,27 +233,21 @@ void loop() {
       Serial.print("V1_B,");Serial.print(buff[4]/1.84);Serial.print(" | ");
       Serial.print("V1_C,");Serial.print(buff[5]/1.84);Serial.print("\n");
       engData[0] += 1;
-    } else if((1111111&engData[0]) == 2){  // Si el 1er digito de engineData es '2' se procede a leer RPM.
-
-      dataToSend[2] = 1;
-      dataToSend[3] = 02;
-      for(int j = 5; j < 12; j++){
-        dataToSend[j] = buff[j-5];
+    } else if((B1111111&engData[0]) == 2){  // Si el 1er digito de engineData es '2' se procede a leer RPM.
+      mydata.buff[1] = 2;        
+      for(int j = 0; j < 5; j++){
+        mydata.buff[j+2] = buff[j];
       }
-      SendMsg();
       
       Serial.print("ENG1_RPM,");Serial.print((buff[0])<<8|buff[1]);Serial.print(" | ");
       Serial.print("ENG1_ERR_CODE,");Serial.print((buff[3])<<8|buff[4]);Serial.print("\n");
       RPM[0] = (buff[0])<<8|buff[1];
       engData[0] += 1;
-    } else if((1111111&engData[0]) == 3){                        // Si el 1er digito de engineData es '3' se procede a leer la temperatura.
-
-      dataToSend[2] = 1;
-      dataToSend[3] = 03;
-      for(int j = 5; j < 12; j++){
-        dataToSend[j] = buff[j-5];
+    } else if((B1111111&engData[0]) == 3){                        // Si el 1er digito de engineData es '3' se procede a leer la temperatura.
+      mydata.buff[1] = 3;        
+      for(int j = 0; j < 6; j++){
+        mydata.buff[j+2] = buff[j];
       }
-      SendMsg();
       
       Serial.print("ENG1_PWM,");Serial.print(buff[0]);Serial.print(" | ");
       Serial.print("ENG1_EMR,");Serial.print(buff[1]);Serial.print(" | ");
@@ -253,27 +258,35 @@ void loop() {
       } else {
         engData[0] = 1;
       }
-    } else if((1111111&engData[0]) == 4){  
-                            
+    } else if((B1111111&engData[0]) == 4){ 
+
+      mydata.buff[1] = 4;        
+      for(int j = 0; j < 1; j++){
+        mydata.buff[j+2] = buff[j];
+      }                            
       Serial.print("ENG1_Current_Throttle_Switch_Status,");Serial.print(buff[0]);Serial.print("\n");      // Throttle Status
       engData[0] += 1;
       
-    } else if((1111111&engData[0]) == 5){     
-                         
+    } else if((B1111111&engData[0]) == 5){     
+
+      mydata.buff[1] = 5;        
+      for(int j = 0; j < 1; j++){
+        mydata.buff[j+2] = buff[j];
+      }
       Serial.print("ENG1_Current_Reserve_Switch_Status,");Serial.print(buff[0]);Serial.print("\n");      // Reverse Status
       engData[0] = 1;
       
     } 
-    bitWrite(engData[0],8,1);
-  } else if((canId == sendIdKelly2) && !bitRead(engData[1],8)){
-    if((1111111&engData[1]) == 1){         
+    ET.sendData();
+    bitWrite(engData[0],7,1);
+  } else if((canId == sendIdKelly2) && !bitRead(engData[1],7)){
+    mydata.buff[0] = sendIdKelly2;
+    if((B1111111&engData[1]) == 1){         
 
-      dataToSend[2] = 1;
-      dataToSend[3] = 11;
-      for(int j = 5; j < 12; j++){
-        dataToSend[j] = buff[j-5];
+      mydata.buff[1] = 1;        
+      for(int j = 0; j < 6; j++){
+        mydata.buff[j+2] = buff[j];
       }
-      SendMsg();
 
       Serial.print("I2_A,");Serial.print(buff[0]);Serial.print(" | ");
       Serial.print("I2_B,");Serial.print(buff[1]);Serial.print(" | ");
@@ -283,28 +296,24 @@ void loop() {
       Serial.print("V2_C,");Serial.print(buff[5]/1.84);Serial.print("\n");
       engData[1] += 1;
       
-    } else if((1111111&engData[1]) == 2){  // 2do digito de engineData es 2, lee RPM.
+    } else if((B1111111&engData[1]) == 2){  // 2do digito de engineData es 2, lee RPM.
 
-      dataToSend[2] = 1;
-      dataToSend[3] = 12;
-      for(int j = 5; j < 12; j++){
-        dataToSend[j] = buff[j-5];
+      mydata.buff[1] = 2;        
+      for(int j = 0; j < 5; j++){
+        mydata.buff[j+2] = buff[j];
       }
-      SendMsg();
       
       Serial.print("ENG2_RPM,");Serial.print((buff[0])<<8|buff[1]);Serial.print(" | ");
       Serial.print("ENG2_ERR_CODE,");Serial.print((buff[3])<<8|buff[4]);Serial.print("\n");
       RPM[1] = (buff[0])<<8|buff[1];
       engData[1] += 1;
       
-    } else if((1111111&engData[1]) == 3){                        // 2do digito de engineData es 3, lee temperatura.
+    } else if((B1111111&engData[1]) == 3){                        // 2do digito de engineData es 3, lee temperatura.
 
-      dataToSend[2] = 1;
-      dataToSend[3] = 13;
-      for(int j = 5; j < 12; j++){
-        dataToSend[j] = buff[j-5];
+      mydata.buff[1] = 3;        
+      for(int j = 0; j < 6; j++){
+        mydata.buff[j+2] = buff[j];
       }
-      SendMsg();
       
       Serial.print("ENG2_PWM,");Serial.print(buff[0]);Serial.print(" | ");      // PWM
       Serial.print("ENG2_EMR,");Serial.print(buff[1]);Serial.print(" | ");      // Enable Motor Rotation
@@ -317,18 +326,26 @@ void loop() {
         engData[1] = 1;
       }
       
-    } else if((1111111&engData[1]) == 4){  
-                            
+    } else if((B1111111&engData[1]) == 4){  
+
+      mydata.buff[1] = 4;        
+      for(int j = 0; j < 1; j++){
+        mydata.buff[j+2] = buff[j];
+      }
       Serial.print("ENG2_Current_Throttle_Switch_Status,");Serial.print(buff[0]);Serial.print("\n");      // Throttle Status
       engData[1] += 1;
       
-    } else if((1111111&engData[1]) == 5){     
-                         
+    } else if((B1111111&engData[1]) == 5){     
+
+      mydata.buff[1] = 5;        
+      for(int j = 0; j < 1; j++){
+        mydata.buff[j+2] = buff[j];
+      }
       Serial.print("ENG2_Current_Reverse_Switch_Status,");Serial.print(buff[0]);Serial.print("\n");      // Reverse Status
       engData[1] = 1;
       
     } 
-    bitWrite(engData[1],8,1);
+    bitWrite(engData[1],7,1);
   }
 
 
@@ -340,7 +357,7 @@ void loop() {
   //// FIN REQUEST ////
 
   if(millis() - lastVelocityTime > tiempoVelocidad){
-    Serial.print("VELOCIDAD,");Serial.println(getVelocidad());
+    //Serial.print("VELOCIDAD,");Serial.println(getVelocidad());
     lastVelocityTime = millis();
   }
   

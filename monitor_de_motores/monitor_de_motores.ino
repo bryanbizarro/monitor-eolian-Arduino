@@ -91,7 +91,6 @@ unsigned char COM_SW_BRK[2] = {0x43, 0};        // [0]Current Brake Switch Statu
 unsigned char COM_SW_REV[2] = {0x44, 0};        // [0]Current Reverse switch status
 
 int engineData = 11;
-byte engData[2] = {1,1}; 
 int RPM[2] = {0,0};
 ////// END KELLY ///////
 
