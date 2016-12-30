@@ -97,18 +97,19 @@ char inChar;
 int index=0;
 char inData[13];
 int charsRead = 0;
+*/
 
 // MPPTs vars
 
 unsigned int Uin, Iin, Uout;
-*/
+
 
 //Variables de delay
 long lastKelly1Time = 0;
 long lastKelly2Time = 0;
 long last_BMS_VoltageTime = 0;
 
-//long lastMpptTime = 0;
+long lastMpptTime = 0;
 
 long lastEnvioTime_BMS_A = 0;
 long lastEnvioTime_BMS_V = 0;
@@ -887,7 +888,7 @@ void loop()
 /*////////////////////   FIN KELLYS   ////////////////////*/
 
 /*////////////////////   LECTURA DE DATOS MPPTs   ////////////////////*/
-  /*
+  
   else if(canId = 0x771)
   {
     Uin  = ((bitRead(buff[0],1)<<1|bitRead(buff[0],0))<<8)|buff[1];
@@ -920,18 +921,18 @@ void loop()
     Serial1.print("MPPT2_TAMB,");Serial1.print(buff[6]);Serial1.print("\n");
     
   }
-  */
+  
 /*////////////////////   FIN MPPTs   ////////////////////*/
 
 
 
 /*////////////////////   BLOQUE DE REQUEST MPPTs   ////////////////////*/
-
-//  if((millis() - lastMpptTime) > 512){
-//    CAN.sendMsgBuf(0x711, 0, 0, 0);
-//    CAN.sendMsgBuf(0x712, 0, 0, 0);
-//    lastMpptTime = millis();
-//  }
+/*
+  if((millis() - lastMpptTime) > 1024){
+    CAN.sendMsgBuf(0x711, 0, 0, 0);
+    CAN.sendMsgBuf(0x712, 0, 0, 0);
+    lastMpptTime = millis();
+  }
 
 /*////////////////////   FIN REQUEST MPPTs   ////////////////////*/
 
