@@ -22,7 +22,9 @@ int BMS_anterior[13];
 int KELLY_VI_D[6];
 int KELLY_VI_I[6];
 int KELLY_RPM_D[2];
+int KELLY_RPM_D_anterior[1];
 int KELLY_RPM_I[2];
+int KELLY_RPM_I_anterior[1];
 int KELLY_TEMP_D[4];
 int KELLY_TEMP_I[4];
 int KELLY_THR_D[1];
@@ -64,7 +66,7 @@ bool serialBms = true;
 #define pi 3.141592653
 
 //Tiempo de envío
-#define tiempoEnvio 800
+#define tiempoEnvio 1500
 
 
 //IDs de request para kellys
@@ -746,7 +748,11 @@ void loop()
   */
         KELLY_RPM_D[0]= ((buff[0])<<8|buff[1]);   // RPM
         KELLY_RPM_D[1]= ((buff[3])<<8|buff[4]);   // ERROR CODE
+
+        if (not((KELLY_RPM_D[0] > 80)&&(abs(KELLY_RPM_D[0]-KELLY_RPM_D_anterior[0])>60))){
         SendKELLY_RPM_D();
+        KELLY_RPM_D_anterior[0] = KELLY_RPM_D[0];
+        }
         engData[0] += 1;
         
       }else if((B1111111&engData[0]) == 3){                        // Si el 1er digito de engineData es '3' se procede a leer la temperatura.
@@ -822,7 +828,11 @@ void loop()
 */
         KELLY_RPM_I[0]= ((buff[0])<<8|buff[1]);
         KELLY_RPM_I[1]= ((buff[3])<<8|buff[4]);
+        
+        if (not((KELLY_RPM_I[0] > 80)&&(abs(KELLY_RPM_I[0]-KELLY_RPM_I_anterior[0])>60))){
         SendKELLY_RPM_I();
+        KELLY_RPM_I_anterior[0] = KELLY_RPM_I[0];
+        }
         
         engData[1] += 1;
         
