@@ -32,6 +32,10 @@ int KELLY_THR_I[1];
 int KELLY_REV_D[1];
 int KELLY_REV_I[1];
 
+int MPPT1[8];
+int MPPT2[8];
+int MPPT3[8];
+
 //True para enviar| False para ignorar
 bool revMode = true;
 bool motores = true;
@@ -99,15 +103,10 @@ char inData[13];
 int charsRead = 0;
 */
 
-// MPPTs vars
-
-unsigned int Uin, Iin, Uout;
-
 
 //Variables de delay
 long lastKelly1Time = 0;
 long lastKelly2Time = 0;
-long last_BMS_VoltageTime = 0;
 
 long lastMpptTime = 0;
 
@@ -126,7 +125,11 @@ long lastEnvioTime_KELLY_h = 0;
 long lastEnvioTime_KELLY_i = 0;
 long lastEnvioTime_KELLY_j = 0;
 
-///////////////////////////////////////////////////////////////////
+long lastEnvioTime_MPPT1 = 0;
+long lastEnvioTime_MPPT2 = 0;
+long lastEnvioTime_MPPT3 = 0;
+
+/////////////////////////////////////////////////////////////////////////////////////////////
 
 MCP_CAN CAN(SPI_CS_PIN);                                    // Set CS pin
 
@@ -160,81 +163,9 @@ void MCP2515_ISR()
   flagRecv = 1;
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////
 
-//bool read2Serial(){
-//  while(mySerial1.available() || (charsRead < 13)){  //Revisar si es necesario un timeout
-//    //Serial1.println("SerialIsAvailable");
-//    if(index < 12){
-//      //Serial1.print(index);Serial1.println(" < 13");
-//      inChar = mySerial1.read();
-//      inData[index] = inChar;
-//      index++;
-//      //Serial1.print("inChar: ");Serial1.println(inChar);
-//    } else {
-//      inChar = mySerial1.read();
-//      inData[index] = inChar;
-//      index++;
-//      //Serial1.print("inChar: ");Serial1.println(inChar);
-//      //Serial1.println("buff full");
-//      //Serial1.print(inData[0]);Serial1.print(inData[1]);Serial1.print(inData[2]);Serial1.print(inData[3]);
-//      //Serial1.print(inData[4]);Serial1.print(inData[5]);Serial1.print(inData[6]);Serial1.print(inData[7]);
-//      //Serial1.print(inData[8]);Serial1.print(inData[9]);Serial1.print(inData[10]);Serial1.print(inData[11]);
-//      //Serial1.println(inData[12]);
-//      if((inData[0] == 255) && (inData[1] == 255) && (inData[4] == 255) && (inData[13] == 255)){
-//        //Serial1.println("data ok");
-//        if(inData[2] == 0){  //REVISAR que igualdad se cumpla!!!
-//          MPPTId = inData[3];
-//          index = 0;
-//          for(int j = 5;j<13;j++){
-//            buff[index] = inData[j];
-//          }
-//          int MPPT_TEMP  = buff[6];
-//          int  Uin  = ((bitRead(buff[0],1)<<1|bitRead(buff[0],0))<<8)|buff[1];
-//          int  Iin  = ((bitRead(buff[2],1)<<1|bitRead(buff[2],0))<<8)|buff[3];
-//          int Uout  = ((bitRead(buff[4],1)<<1|bitRead(buff[4],0))<<8)|buff[5];
-//          int BVLR = (bitRead(buff[0],7));
-//          int OVT  = (bitRead(buff[0],6));
-//          int NOC  = (bitRead(buff[0],5));
-//          int UNDV = (bitRead(buff[0],4));
-//  
-//          Serial1.print("MPPT");Serial1.print(MPPTId);Serial1.print("_BVLR,");Serial1.print(BVLR);Serial1.print("\n");
-//          delay(bmstimi);
-//          Serial1.print("MPPT");Serial1.print(MPPTId);Serial1.print("_OVT,");Serial1.print(OVT);Serial1.print("\n");
-//          delay(bmstimi);
-//          Serial1.print("MPPT");Serial1.print(MPPTId);Serial1.print("_NOC,");Serial1.print(NOC);Serial1.print("\n");
-//          delay(bmstimi);
-//          Serial1.print("MPPT");Serial1.print(MPPTId);Serial1.print("_UNDV,");Serial1.print(UNDV);Serial1.print("\n");
-//          delay(bmstimi);
-//          Serial1.print("MPPT");Serial1.print(MPPTId);Serial1.print("_TEMP,");Serial1.print(MPPT_TEMP);Serial1.print("\n");
-//          delay(bmstimi);
-//          Serial1.print("MPPT");Serial1.print(MPPTId);Serial1.print("_UIN,");Serial1.print(Uin);Serial1.print("\n");
-//          delay(bmstimi);
-//          Serial1.print("MPPT");Serial1.print(MPPTId);Serial1.print("_IIN,");Serial1.print(Iin);Serial1.print("\n");
-//          delay(bmstimi);
-//          Serial1.print("MPPT");Serial1.print(MPPTId);Serial1.print("_UOUT");Serial1.print(Uout);Serial1.print("\n");
-//          delay(bmstimi);
-//        } else if (inData[2] == 2){
-//          Serial1.print("ARDUINO2_ERROR");
-//        } else if (inData[2] == 1){
-//          Serial1.print("ARDUINO_ReadyPapi!");
-//        } else {
-//          Serial1.print("BIT_ERROR_READERROR");
-//        }
-//      } else {
-//        for(int j = 1; j<13;j++){
-//          inData[j-1] = inData[j];
-//        }
-//        index -= 1;
-//      }
-//    }
-//    charsRead++;
-//  }
-//}
-
-
-//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-//Indica si en un vector de tamaño 20, desde el indice i hasta el final hay ceros
+//Indica si en un vector de tamaño 20, desde el indice 'i' hasta el final hay ceros
 //Se usa para poder rellenar el vector si existen espacios disponibles
 bool zeros(int vector[20], int desde){
   int largo =20;
@@ -275,6 +206,84 @@ bool esigual(int id, int valor, int id_a, int valor_a){
     }else{
       return false;
     }
+}
+
+//Envia los datos del MPPT en un array de 8
+void Send_MPPT1(){
+if((millis() - lastEnvioTime_MPPT1) > tiempoEnvio){
+  Serial.print("M");
+  Serial.print(",");
+for(int i=0;i<7;i++){
+  Serial.print(MPPT1[i]);
+  Serial.print(",");
+}
+  Serial.print(MPPT1[7]);
+  Serial.print("\n");
+
+//Xbee
+  Serial1.print("M");
+  Serial1.print(",");
+for(int i=0;i<7;i++){
+  Serial1.print(MPPT1[i]);
+  Serial1.print(",");
+}
+  Serial1.print(MPPT1[7]);
+  Serial1.print("\n");
+
+  lastEnvioTime_MPPT1 = millis();  
+}
+}
+
+//Envia los datos del MPPT en un array de 8
+void Send_MPPT2(){
+if((millis() - lastEnvioTime_MPPT2) > tiempoEnvio){
+  Serial.print("N");
+  Serial.print(",");
+for(int i=0;i<7;i++){
+  Serial.print(MPPT2[i]);
+  Serial.print(",");
+}
+  Serial.print(MPPT2[7]);
+  Serial.print("\n");
+
+//Xbee
+  Serial1.print("N");
+  Serial1.print(",");
+for(int i=0;i<7;i++){
+  Serial1.print(MPPT2[i]);
+  Serial1.print(",");
+}
+  Serial1.print(MPPT2[7]);
+  Serial1.print("\n");
+
+  lastEnvioTime_MPPT2 = millis();  
+}
+}
+
+//Envia los datos del MPPT en un array de 8
+void Send_MPPT3(){
+if((millis() - lastEnvioTime_MPPT3) > tiempoEnvio){
+  Serial.print("O");
+  Serial.print(",");
+for(int i=0;i<7;i++){
+  Serial.print(MPPT3[i]);
+  Serial.print(",");
+}
+  Serial.print(MPPT3[7]);
+  Serial.print("\n");
+
+//Xbee
+  Serial1.print("O");
+  Serial1.print(",");
+for(int i=0;i<7;i++){
+  Serial1.print(MPPT3[i]);
+  Serial1.print(",");
+}
+  Serial1.print(MPPT3[7]);
+  Serial1.print("\n");
+
+  lastEnvioTime_MPPT3 = millis();  
+}
 }
 
 //Envía por Serial y Serial1 los datos del BMS
@@ -369,7 +378,7 @@ for(int i=0;i<5;i++){
   Serial.print(KELLY_VI_D[i]);
   Serial.print(",");
 }
-  Serial.print(BMS[5]);
+  Serial.print(KELLY_VI_D[5]);
   Serial.print("\n");
   
 //Xbee
@@ -379,7 +388,7 @@ for(int i=0;i<5;i++){
   Serial1.print(KELLY_VI_D[i]);
   Serial1.print(",");
 }
-  Serial1.print(BMS[5]);
+  Serial1.print(KELLY_VI_D[5]);
   Serial1.print("\n");
 
   lastEnvioTime_KELLY_a=millis();
@@ -392,20 +401,20 @@ if((millis() - lastEnvioTime_KELLY_b) > tiempoEnvio){
   Serial.print("b");
   Serial.print(",");
 for(int i=0;i<5;i++){
-  Serial.print(KELLY_VI_D[i]);
+  Serial.print(KELLY_VI_I[i]);
   Serial.print(",");
 }
-  Serial.print(BMS[5]);
+  Serial.print(KELLY_VI_I[5]);
   Serial.print("\n");
 
 //Xbee
   Serial1.print("b");
   Serial1.print(",");
 for(int i=0;i<5;i++){
-  Serial1.print(KELLY_VI_D[i]);
+  Serial1.print(KELLY_VI_I[i]);
   Serial1.print(",");
 }
-  Serial1.print(BMS[5]);
+  Serial1.print(KELLY_VI_I[5]);
   Serial1.print("\n");
 
   lastEnvioTime_KELLY_b=millis();
@@ -637,7 +646,7 @@ void loop()
 
 /*////////////////////   LECTURA DE DATOS DE BMS   ////////////////////*/
   
-    if (canId == 0x036 && (millis() - last_BMS_VoltageTime > 17)){ // Lectura de Voltajes en tiempo real (solo con veloc de CAN BUS mayor a 256)
+    if (canId == 0x036){
       
         int cellID = (buff[0]);
         int instVolt = (buff[1]<<8)|buff[2];
@@ -658,8 +667,6 @@ void loop()
             aux_volt=0;
           }
         }
-                
-        last_BMS_VoltageTime = millis();
         
     }else if (canId == 0x081){ // Lectura de temperaturas
       int thermistorID = buff[0];
@@ -722,33 +729,23 @@ void loop()
     }
 /*////////////////////   FIN BMS | LECTURA DE DATOS KELLYS   ////////////////////*/
     else if((canId == sendIdKelly1) && !bitRead(engData[0],7)){
-      //Serial1.print(sendIdKelly1);
-      //mydata.buff[0] = sendIdKelly1;
-      if((B1111111&engData[0]) == 1){ 
-   /*     
-        //mydata.buff[1] = 1;        
-        for(int j = 0; j < 6; j++){
-          //mydata.buff[j+2] = buff[j];
-        }
-        */
 
-        KELLY_VI_D[0]= (buff[0],DEC);     // IA
-        KELLY_VI_D[1]= (buff[1],DEC);     // IB
-        KELLY_VI_D[2]= (buff[2],DEC);     // IC
-        KELLY_VI_D[3]= (buff[3]/1.84);    // VA
-        KELLY_VI_D[4]= (buff[4]/1.84);    // VB
-        KELLY_VI_D[5]= (buff[5]/1.84);    // VC
+      if((B1111111&engData[0]) == 1){ 
+
+        KELLY_VI_D[0]= (buff[0],DEC);     // IA DER
+        KELLY_VI_D[1]= (buff[1],DEC);     // IB DER
+        KELLY_VI_D[2]= (buff[2],DEC);     // IC DER
+        KELLY_VI_D[3]= (buff[3]/1.84);    // VA DER
+        KELLY_VI_D[4]= (buff[4]/1.84);    // VB DER
+        KELLY_VI_D[5]= (buff[5]/1.84);    // VC DER
 
         SendKELLY_VI_D(); 
         engData[0] += 1;
+        
       }else if((B1111111&engData[0]) == 2){  // Si el 1er digito de engineData es '2' se procede a leer RPM.
- /*         //mydata.buff[1] = 2;        
-          for(int j = 0; j < 5; j++){
-            //mydata.buff[j+2] = buff[j];
-          }
-  */
-        KELLY_RPM_D[0]= ((buff[0])<<8|buff[1]);   // RPM
-        KELLY_RPM_D[1]= ((buff[3])<<8|buff[4]);   // ERROR CODE
+
+        KELLY_RPM_D[0]= ((buff[0])<<8|buff[1]);   // RPM DER
+        KELLY_RPM_D[1]= ((buff[3])<<8|buff[4]);   // ERROR CODE DER
 
         if (not((KELLY_RPM_D[0] > 80)&&(abs(KELLY_RPM_D[0]-KELLY_RPM_D_anterior[0])>60))){
         SendKELLY_RPM_D();
@@ -757,16 +754,11 @@ void loop()
         engData[0] += 1;
         
       }else if((B1111111&engData[0]) == 3){                        // Si el 1er digito de engineData es '3' se procede a leer la temperatura.
-        //mydata.buff[1] = 3;        
-/*        for(int j = 0; j < 6; j++){
-         //mydata.buff[j+2] = buff[j];
-         }
-  */
 
-        KELLY_TEMP_D[0]= buff[0];
-        KELLY_TEMP_D[1]= buff[1];
-        KELLY_TEMP_D[2]= buff[2];
-        KELLY_TEMP_D[3]= buff[3];
+        KELLY_TEMP_D[0]= buff[0];     //PWM DER
+        KELLY_TEMP_D[1]= buff[1];     //EMR DER
+        KELLY_TEMP_D[2]= buff[2];     //MOTOR TEMP DER
+        KELLY_TEMP_D[3]= buff[3];     //KELLY TEMP DER
         SendKELLY_TEMP_D();
         
         if(revMode){ 
@@ -776,59 +768,41 @@ void loop()
         }
       
       }else if((B1111111&engData[0]) == 4){ 
-/*      //mydata.buff[1] = 4;        
-          for(int j = 0; j < 1; j++){
-            //mydata.buff[j+2] = buff[j];
-          }  
-*/
-        KELLY_THR_D[0]=buff[0];
+
+        KELLY_THR_D[0]=buff[0];   //THROTLE SWITCH STATUS DER
         SendKELLY_THR_D();
         
         engData[0] += 1;
         
       }else if((B1111111&engData[0]) == 5){     
-/*      //mydata.buff[1] = 5;        
-          for(int j = 0; j < 1; j++){
-            //mydata.buff[j+2] = buff[j];
-          }
-*/
-        KELLY_REV_D[0]=buff[0];
+
+        KELLY_REV_D[0]=buff[0];   //REVERSE SWITCH STATUS DER
         SendKELLY_REV_D();
        
         engData[0] = 1;
         
-      } 
-      //ET.sendData();
+      }
       bitWrite(engData[0],7,1);
+      
     }else if((canId == sendIdKelly2) && !bitRead(engData[1],7)){
-      //mydata.buff[0] = sendIdKelly2;
+
       if((B1111111&engData[1]) == 1){         
-/*  
-        //mydata.buff[1] = 1;        
-        for(int j = 0; j < 6; j++){
-          //mydata.buff[j+2] = buff[j];
-        }
-  */
-        KELLY_VI_I[0]= (buff[0],DEC);
-        KELLY_VI_I[1]= (buff[1],DEC);
-        KELLY_VI_I[2]= (buff[2],DEC);
-        KELLY_VI_I[3]= (buff[3]/1.84);
-        KELLY_VI_I[4]= (buff[4]/1.84);
-        KELLY_VI_I[5]= (buff[5]/1.84);
+
+        KELLY_VI_I[0]= (buff[0],DEC);   //IA IZ
+        KELLY_VI_I[1]= (buff[1],DEC);   //IB IZ
+        KELLY_VI_I[2]= (buff[2],DEC);   //IC IZ
+        KELLY_VI_I[3]= (buff[3]/1.84);  //VA IZ
+        KELLY_VI_I[4]= (buff[4]/1.84);  //VB IZ
+        KELLY_VI_I[5]= (buff[5]/1.84);  //VC IZ
 
         SendKELLY_VI_I();
 
         engData[1] += 1;
         
       }else if((B1111111&engData[1]) == 2){  // 2do digito de engineData es 2, lee RPM.
- /* 
-        //mydata.buff[1] = 2;        
-        for(int j = 0; j < 5; j++){
-          //mydata.buff[j+2] = buff[j];
-        }
-*/
-        KELLY_RPM_I[0]= ((buff[0])<<8|buff[1]);
-        KELLY_RPM_I[1]= ((buff[3])<<8|buff[4]);
+
+        KELLY_RPM_I[0]= ((buff[0])<<8|buff[1]); //RPM IZ
+        KELLY_RPM_I[1]= ((buff[3])<<8|buff[4]); //ERROR CODE IZ
         
         if (not((KELLY_RPM_I[0] > 80)&&(abs(KELLY_RPM_I[0]-KELLY_RPM_I_anterior[0])>60))){
         SendKELLY_RPM_I();
@@ -838,16 +812,11 @@ void loop()
         engData[1] += 1;
         
       }else if((B1111111&engData[1]) == 3){                        // 2do digito de engineData es 3, lee temperatura.
-  
-        //mydata.buff[1] = 3;        
-        //for(int j = 0; j < 6; j++){
-          //mydata.buff[j+2] = buff[j];
-        //}
         
-        KELLY_TEMP_I[0]= buff[0];
-        KELLY_TEMP_I[1]= buff[1];
-        KELLY_TEMP_I[2]= buff[2];
-        KELLY_TEMP_I[3]= buff[3];
+        KELLY_TEMP_I[0]= buff[0];   //PWM IZ
+        KELLY_TEMP_I[1]= buff[1];   //EMR IZ
+        KELLY_TEMP_I[2]= buff[2];   //MOTOR TEMP IZ
+        KELLY_TEMP_I[3]= buff[3];   //KELLY TEMP IZ
         SendKELLY_TEMP_I();  
       
         if(revMode) { 
@@ -858,24 +827,14 @@ void loop()
         
       }else if((B1111111&engData[1]) == 4){  
   
- /*     //mydata.buff[1] = 4;        
-        for(int j = 0; j < 1; j++){
-          //mydata.buff[j+2] = buff[j];
-        }
-*/
-        KELLY_THR_I[0]=buff[0];
+        KELLY_THR_I[0]=buff[0];   //THROTLE SWITCH STATUS IZ
         SendKELLY_THR_I();
         
         engData[1] += 1;
         
       }else if((B1111111&engData[1]) == 5){     
-  
-/*      //mydata.buff[1] = 5;        
-        for(int j = 0; j < 1; j++){
-          //mydata.buff[j+2] = buff[j];
-        }
-*/
-        KELLY_REV_I[0]=buff[0];
+
+        KELLY_REV_I[0]=buff[0]; //REVERSE SWITCH STATUS IZ
         SendKELLY_REV_I();
         
         engData[1] = 1;
@@ -889,42 +848,45 @@ void loop()
 
 /*////////////////////   LECTURA DE DATOS MPPTs   ////////////////////*/
   
-  else if(canId = 0x771)
-  {
-    Uin  = ((bitRead(buff[0],1)<<1|bitRead(buff[0],0))<<8)|buff[1];
-    Iin  = ((bitRead(buff[2],1)<<1|bitRead(buff[2],0))<<8)|buff[3];
-    Uout  = ((bitRead(buff[4],1)<<1|bitRead(buff[4],0))<<8)|buff[5];
+  else if(canId = 0x771){
     
-    Serial1.print("MPPT1_BVLR,");Serial1.print(bitRead(buff[0],7));Serial1.print("\n");
-    Serial1.print("MPPT1_OVT,");Serial1.print(bitRead(buff[0],6));Serial1.print("\n");
-    Serial1.print("MPPT1_NOC,");Serial1.print(bitRead(buff[0],5));Serial1.print("\n");
-    Serial1.print("MPPT1_UNDV,");Serial1.print(bitRead(buff[0],4));Serial1.print("\n");
-    Serial1.print("MPPT1_UIN,");Serial1.print(Uin);Serial1.print("\n");
-    Serial1.print("MPPT1_IIN,");Serial1.print(Iin);Serial1.print("\n");
-    Serial1.print("MPPT1_UOUT,");Serial1.print(Uout);Serial1.print("\n");
-    Serial1.print("MPPT1_TAMB,");Serial1.print(buff[6]);Serial1.print("\n");
-    
-  }
-  else if(canId = 0x772)
-  {
-    Uin  = ((bitRead(buff[0],1)<<1|bitRead(buff[0],0))<<8)|buff[1];
-    Iin  = ((bitRead(buff[2],1)<<1|bitRead(buff[2],0))<<8)|buff[3];
-    Uout  = ((bitRead(buff[4],1)<<1|bitRead(buff[4],0))<<8)|buff[5];
-    
-    Serial1.print("MPPT2_BVLR,");Serial1.print(bitRead(buff[0],7));Serial1.print("\n");
-    Serial1.print("MPPT2_OVT,");Serial1.print(bitRead(buff[0],6));Serial1.print("\n");
-    Serial1.print("MPPT2_NOC,");Serial1.print(bitRead(buff[0],5));Serial1.print("\n");
-    Serial1.print("MPPT2_UNDV,");Serial1.print(bitRead(buff[0],4));Serial1.print("\n");
-    Serial1.print("MPPT2_UIN,");Serial1.print(Uin);Serial1.print("\n");
-    Serial1.print("MPPT2_IIN,");Serial1.print(Iin);Serial1.print("\n");
-    Serial1.print("MPPT2_UOUT,");Serial1.print(Uout);Serial1.print("\n");
-    Serial1.print("MPPT2_TAMB,");Serial1.print(buff[6]);Serial1.print("\n");
-    
-  }
-  
-/*////////////////////   FIN MPPTs   ////////////////////*/
+    MPPT1[0] = ((bitRead(buff[0],1)<<1|bitRead(buff[0],0))<<8)|buff[1];   //U_IN_1
+    MPPT1[1] = ((bitRead(buff[2],1)<<1|bitRead(buff[2],0))<<8)|buff[3];   //I_IN_1
+    MPPT1[2] = ((bitRead(buff[4],1)<<1|bitRead(buff[4],0))<<8)|buff[5];   //U_OUT_1
+    MPPT1[3] = bitRead(buff[0],7);                                        //BVLR_1
+    MPPT1[4] = bitRead(buff[0],6);                                        //OVT_1
+    MPPT1[5] = bitRead(buff[0],5);                                        //NOC_1
+    MPPT1[6] = bitRead(buff[0],5);                                        //UNDV_1
+    MPPT1[7] = buff[6];                                                   //TEMP_1
 
+    Send_MPPT1();
+  }
+  else if(canId = 0x772){
+    
+    MPPT2[0] = ((bitRead(buff[0],1)<<1|bitRead(buff[0],0))<<8)|buff[1];   //U_IN_2
+    MPPT2[1] = ((bitRead(buff[2],1)<<1|bitRead(buff[2],0))<<8)|buff[3];   //I_IN_2
+    MPPT2[2] = ((bitRead(buff[4],1)<<1|bitRead(buff[4],0))<<8)|buff[5];   //U_OUT_2
+    MPPT2[3] = bitRead(buff[0],7);                                        //BVLR_2
+    MPPT2[4] = bitRead(buff[0],6);                                        //OVT_2
+    MPPT2[5] = bitRead(buff[0],5);                                        //NOC_2
+    MPPT2[6] = bitRead(buff[0],5);                                        //UNDV_2
+    MPPT2[7] = buff[6];                                                   //TEMP_2
 
+    Send_MPPT2();
+  }
+  else if (canId = 0x773){
+    
+    MPPT1[0] = ((bitRead(buff[0],1)<<1|bitRead(buff[0],0))<<8)|buff[1];   //U_IN_3
+    MPPT1[1] = ((bitRead(buff[2],1)<<1|bitRead(buff[2],0))<<8)|buff[3];   //I_IN_3
+    MPPT1[2] = ((bitRead(buff[4],1)<<1|bitRead(buff[4],0))<<8)|buff[5];   //U_OUT_3
+    MPPT1[3] = bitRead(buff[0],7);                                        //BVLR_3
+    MPPT1[4] = bitRead(buff[0],6);                                        //OVT_3
+    MPPT1[5] = bitRead(buff[0],5);                                        //NOC_3
+    MPPT1[6] = bitRead(buff[0],5);                                        //UNDV_3
+    MPPT1[7] = buff[6];                                                   //TEMP_3
+
+    Send_MPPT3();
+  }
 
 /*////////////////////   BLOQUE DE REQUEST MPPTs   ////////////////////*/
 /*
