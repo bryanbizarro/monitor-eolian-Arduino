@@ -8,10 +8,6 @@
 #include <mcp_can.h>
 #include <SPI.h>
 #include <SoftwareSerial.h>
-int rx = 10;
-int tx = 11;
-
-SoftwareSerial mySerial(rx, tx); // RX, TX
 
 // the cs pin of the version after v1.1 is default to D9
 // v0.9b and v1.0 is default D10
@@ -32,8 +28,10 @@ unsigned char buff[7];
 
 unsigned char dataToSend[13];
 
-unsigned long canId;
+unsigned long canId = 0x000;
 unsigned int Uin, Iin, Uout;
+
+long lastMpptTime = 0;
 
 
 ///////////////////////////////////////////////////////////////////
@@ -42,8 +40,8 @@ MCP_CAN CAN(SPI_CS_PIN);                                    // Set CS pin
 
 void setup()
 {
-  mySerial.begin(57600);
-  Serial.begin(57600);   // Iniciar Serial para debug
+  Serial1.begin(115200);
+  Serial.begin(115200);   // Iniciar Serial para debug
   dataToSend[0]   = 255; //Header
   dataToSend[1]   = 255; //Header
   dataToSend[4]   = 255; //Middle
@@ -79,19 +77,33 @@ void MCP2515_ISR()
 
 void SendMsg(){
   for(unsigned char charToSend:dataToSend){
-    mySerial.write(charToSend);
+    Serial1.write(charToSend);
   }
 }
 
 void loop(){
   
   ////////////////////////////////////////////// MPPT1 2.0 ////////////////////////////////////////////////////////////
+  CAN.readMsgBuf(&len, buff);
+  canId = CAN.getCanId();
+  //Serial.print("MPPTId: ANtes ");Serial.println(canId);
+  //Serial.print("lastMpptTime: ");Serial.println(lastMpptTime);
+  if((millis() - lastMpptTime) > 1024){
+    Serial.println("Sending Request to MPPTs");
+    CAN.sendMsgBuf(0x711, 0, 0, 0);
+    //CAN.sendMsgBuf(0x712, 0, 0, 0);
+    lastMpptTime = millis();
+  }
+
+  //Serial.print("checkReceive ");Serial.println(CAN.checkReceive());
+
+  if(CAN.checkReceive() != CAN_NOMSG){
+
 
     // send data:  id = 0x00, standrad frame, data len = 8, stmp: data buf
-    CAN.sendMsgBuf(0x711, 0, 0, 0);
-    delay(del);
     CAN.readMsgBuf(&len, buff);
     canId = CAN.getCanId();
+    Serial.print("MPPTId: despues ");Serial.println(canId,HEX);
     if (canId == 0x771){
       
       dataToSend[2] = 0;
@@ -114,35 +126,9 @@ void loop(){
       Serial.print("MPPT1_UOUT,");Serial.print(Uout);Serial.print("\n");
       Serial.print("MPPT1_TAMB,");Serial.print(buff[6]);Serial.print("\n");
     }
+  }
 
     ////////////////////////////////////////////// MPPT2 2.0 ////////////////////////////////////////////////////////////
-
-    // send data:  id = 0x00, standrad frame, data len = 8, stmp: data buf
-    CAN.sendMsgBuf(0x712, 0, 0, 0);
-    delay(del);
-    CAN.readMsgBuf(&len, buff);
-    canId = CAN.getCanId();
-    if (canId == 0x772){
-      dataToSend[2] = 0;
-      dataToSend[3] = 2;
-      for(int j = 5; j < 12; j++){
-        dataToSend[j] = buff[j-5];
-      }
-      SendMsg();
-
-      Uin  = ((bitRead(buff[0],1)<<1|bitRead(buff[0],0))<<8)|buff[1];
-      Iin  = ((bitRead(buff[2],1)<<1|bitRead(buff[2],0))<<8)|buff[3];
-      Uout  = ((bitRead(buff[4],1)<<1|bitRead(buff[4],0))<<8)|buff[5];
-      
-      Serial.print("MPPT2_BVLR,");Serial.print(bitRead(buff[0],7));Serial.print("\n");
-      Serial.print("MPPT2_OVT,");Serial.print(bitRead(buff[0],6));Serial.print("\n");
-      Serial.print("MPPT2_NOC,");Serial.print(bitRead(buff[0],5));Serial.print("\n");
-      Serial.print("MPPT2_UNDV,");Serial.print(bitRead(buff[0],4));Serial.print("\n");
-      Serial.print("MPPT2_UIN,");Serial.print(Uin);Serial.print("\n");
-      Serial.print("MPPT2_IIN,");Serial.print(Iin);Serial.print("\n");
-      Serial.print("MPPT2_UOUT,");Serial.print(Uout);Serial.print("\n");
-      Serial.print("MPPT2_TAMB,");Serial.print(buff[6]);Serial.print("\n");
-    }
 
     /////// Fin Loop ///////
 } 
