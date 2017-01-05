@@ -24,7 +24,7 @@ unsigned char flagRecv = 0;
 unsigned char len = 0;
 char str[20];
 
-unsigned char buff[7];
+unsigned char buff[8];
 
 unsigned char dataToSend[13];
 
@@ -40,8 +40,8 @@ MCP_CAN CAN(SPI_CS_PIN);                                    // Set CS pin
 
 void setup()
 {
-  Serial1.begin(115200);
-  Serial.begin(115200);   // Iniciar Serial para debug
+ // Serial1.begin(115200);
+  Serial.begin(9600);   // Iniciar Serial para debug
   dataToSend[0]   = 255; //Header
   dataToSend[1]   = 255; //Header
   dataToSend[4]   = 255; //Middle
@@ -77,7 +77,7 @@ void MCP2515_ISR()
 
 void SendMsg(){
   for(unsigned char charToSend:dataToSend){
-    Serial1.write(charToSend);
+   // Serial1.write(charToSend);
   }
 }
 
@@ -103,27 +103,27 @@ void loop(){
     // send data:  id = 0x00, standrad frame, data len = 8, stmp: data buf
     CAN.readMsgBuf(&len, buff);
     canId = CAN.getCanId();
-    Serial.print("MPPTId: despues ");Serial.println(canId,HEX);
+    Serial.print("MPPTId: ");Serial.println(canId,HEX);
     if (canId == 0x771){
       
-      dataToSend[2] = 0;
-      dataToSend[3] = 1;
-      for(int j = 5; j < 12; j++){
-        dataToSend[j] = buff[j-5];
-      }
-      SendMsg();
-
-      Uin  = ((bitRead(buff[0],1)<<1|bitRead(buff[0],0))<<8)|buff[1];
-      Iin  = ((bitRead(buff[2],1)<<1|bitRead(buff[2],0))<<8)|buff[3];
-      Uout  = ((bitRead(buff[4],1)<<1|bitRead(buff[4],0))<<8)|buff[5];
+//      dataToSend[2] = 0;
+//      dataToSend[3] = 1;
+//      for(int j = 5; j < 12; j++){
+//        dataToSend[j] = buff[j-5];
+//      }
+//      SendMsg();
+      
+      Uin  = (((bitRead(buff[0],1)<<1|bitRead(buff[0],0))<<8)|buff[1])<<1;
+      Iin  = (((bitRead(buff[2],1)<<1|bitRead(buff[2],0))<<8)|buff[3])<<1;
+      Uout  = (((bitRead(buff[4],1)<<1|bitRead(buff[4],0))<<8)|buff[5])<<1;
       
       Serial.print("MPPT1_BVLR,");Serial.print(bitRead(buff[0],7));Serial.print("\n");
       Serial.print("MPPT1_OVT,");Serial.print(bitRead(buff[0],6));Serial.print("\n");
       Serial.print("MPPT1_NOC,");Serial.print(bitRead(buff[0],5));Serial.print("\n");
       Serial.print("MPPT1_UNDV,");Serial.print(bitRead(buff[0],4));Serial.print("\n");
-      Serial.print("MPPT1_UIN,");Serial.print(Uin);Serial.print("\n");
-      Serial.print("MPPT1_IIN,");Serial.print(Iin);Serial.print("\n");
-      Serial.print("MPPT1_UOUT,");Serial.print(Uout);Serial.print("\n");
+      Serial.print("MPPT1_UIN,");Serial.print(Uin,DEC);Serial.print(" | ");Serial.print(Uin,BIN);Serial.print(" | ");Serial.print(bitRead(buff[0],1));Serial.print(" ");Serial.print(bitRead(buff[0],0));Serial.print(" ");Serial.print(buff[1],BIN);Serial.print("\n");
+      Serial.print("MPPT1_IIN,");Serial.print(Iin,DEC);Serial.print("\n");
+      Serial.print("MPPT1_UOUT,");Serial.print(Uout,DEC);Serial.print("\n");
       Serial.print("MPPT1_TAMB,");Serial.print(buff[6]);Serial.print("\n");
     }
   }
