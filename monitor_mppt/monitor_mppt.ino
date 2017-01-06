@@ -14,7 +14,6 @@
 const int SPI_CS_PIN = 9;
 ////////////////////////////////////////////////////////////////////
 /// Tx
-unsigned char CCP_A2D_BATCH_READ1[1] = {0x1B};
 
 int del = 100;
 int i   = 0; 
@@ -28,7 +27,7 @@ unsigned char buff[8];
 
 unsigned char dataToSend[13];
 
-unsigned long canId = 0x000;
+unsigned long canId;
 unsigned int Uin, Iin, Uout;
 
 long lastMpptTime = 0;
